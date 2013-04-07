@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Бложек]]></title>
+  <link href="http://zvirusz.github.com/zvirusz/atom.xml" rel="self"/>
+  <link href="http://zvirusz.github.com/zvirusz/"/>
+  <updated>2013-04-07T19:11:48+07:00</updated>
+  <id>http://zvirusz.github.com/zvirusz/</id>
+  <author>
+    <name><![CDATA[Андрей Янцен]]></name>
+    <email><![CDATA[andrey@janzen.su]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+</feed>
