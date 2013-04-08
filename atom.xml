@@ -4,7 +4,7 @@
   <title><![CDATA[Бложек сурового пэхэпэшника]]></title>
   <link href="http://andrey.janzen.su//atom.xml" rel="self"/>
   <link href="http://andrey.janzen.su//"/>
-  <updated>2013-04-09T00:48:24+07:00</updated>
+  <updated>2013-04-09T00:59:45+07:00</updated>
   <id>http://andrey.janzen.su//</id>
   <author>
     <name><![CDATA[Андрей Янцен]]></name>
@@ -12,6 +12,56 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Отправка уведомлений на почту при деплое проекта]]></title>
+    <link href="http://andrey.janzen.su//blog/2011/08/19/otpravka-uviedomlienii-na-pochtu-pri-dieploie-proiekta/"/>
+    <updated>2011-08-19T12:02:00+07:00</updated>
+    <id>http://andrey.janzen.su//blog/2011/08/19/otpravka-uviedomlienii-na-pochtu-pri-dieploie-proiekta</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Реанимируем dctc для борьбы с ложными файлами]]></title>
+    <link href="http://andrey.janzen.su//blog/2011/01/05/rieanimiruiem-dctc-dlia-borby-s-lozhnymi-failami/"/>
+    <updated>2011-01-05T14:39:00+07:00</updated>
+    <id>http://andrey.janzen.su//blog/2011/01/05/rieanimiruiem-dctc-dlia-borby-s-lozhnymi-failami</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[QR для оплаты по СМС]]></title>
+    <link href="http://andrey.janzen.su//blog/2010/06/28/qr-dlia-oplaty-po-sms/"/>
+    <updated>2010-06-28T17:32:00+07:00</updated>
+    <id>http://andrey.janzen.su//blog/2010/06/28/qr-dlia-oplaty-po-sms</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Расширяем функционал Monopoly City Streets]]></title>
+    <link href="http://andrey.janzen.su//blog/2009/10/23/rasshiriaiem-funktsional-monopoly-city-streets/"/>
+    <updated>2009-10-23T11:13:00+07:00</updated>
+    <id>http://andrey.janzen.su//blog/2009/10/23/rasshiriaiem-funktsional-monopoly-city-streets</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Отслеживание iframe]]></title>
+    <link href="http://andrey.janzen.su//blog/2009/10/16/otsliezhivaniie-iframe/"/>
+    <updated>2009-10-16T22:36:00+07:00</updated>
+    <id>http://andrey.janzen.su//blog/2009/10/16/otsliezhivaniie-iframe</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Настройка маршрутизации по двум провайдерам]]></title>
