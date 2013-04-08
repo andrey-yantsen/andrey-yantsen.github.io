@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: linux | Бложек сурового пэхэпэшника]]></title>
+  <link href="http://andrey.janzen.su//blog/categories/linux/atom.xml" rel="self"/>
+  <link href="http://andrey.janzen.su//"/>
+  <updated>2013-04-09T00:42:36+07:00</updated>
+  <id>http://andrey.janzen.su//</id>
+  <author>
+    <name><![CDATA[Андрей Янцен]]></name>
+    <email><![CDATA[andrey@janzen.su]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Каскадирование squid'ов]]></title>
+    <link href="http://andrey.janzen.su//blog/2008/06/27/kaskadirovaniie-squidov/"/>
+    <updated>2008-06-27T19:53:00+07:00</updated>
+    <id>http://andrey.janzen.su//blog/2008/06/27/kaskadirovaniie-squidov</id>
+    <content type="html"><![CDATA[<p>Во времена слишком дорогого анлима (64кбита — 1000руб), сотворили с товарищами кластер проксей, дабы увеличить суммарную пропускную способность. Время шло, цены менялись. Сейчас они уже более дружелюбны — мбитный анлим (с ночным удвоением скорости) стоит всё те же 1000руб. Но, не смотря на это, кластером всё ещё иногда пользуемся. Решил вот поделиться с общественностью методом создания такого добра, вдруг кому будет интересно.</p>
+
+<p>Для опытов нам потребуется:</p>
+
+<ol>
+<li>1 сервер с установленным на нём squid'ом + ещё какой-нибудь проксёй (если хотите, чтобы этот сервер был не только центральным, но и делился инетом).
+я расскажу про поднятие кластера на базе дебиана, 2 интернет-каналов и 3 сквидов (сквиды для родительских проксе выбраны по 2 причинам: из-за возомжности предоставления статистики по текущим соединениям; из-за лени искать альтернативу)</li>
+<li>Любое количество компьютеров, с любыми ОС и любыми http-проксями</li>
+<li>Опционально — апач, пхп и скрипт <a href="http://samm.kiev.ua/sqstat/">SqStat</a> — для просмотря активности прокси</li>
+</ol>
+
+
+<!-- more -->
+
+
+<p>Будем считать что у нас есть 2 машины — <code>192.168.1.1</code> (у неё так же есть 2й ип, со 2м провайдером — <code>192.168.2.1</code>) и <code>192.168.1.2</code>.</p>
+
+<p>Немного погуглив — я нашёл заметку без малого 5летней давности — <a href="http://ksimute.trancom.ru/squid-2-chans.shtml">Squid 2 chans</a>. Из неё было выцеплено 2 момента — как, собственно, организовать кластер и как проксировать на разных интерфейсах.</p>
+
+<p>Для начала — создадим дополнительные сервисы squid'a.
+Сперва — немного подправим конфиг сервера (<code>/etc/squid/squid.conf</code>). Т.к. кэш мне не нужен — я его отрубил. Делается это установкой параметра <code>cache_dir</code> следующим образом:
+<code>
+cache_dir null /var/spool/squid
+</code></p>
+
+<p>Т.к. отключили кэш — отрубаем и лог записи в кэш
+<code>
+cache_store_log none
+</code></p>
+
+<p>Откроем доступ к прокси для всех (нужно вставить до записи <code>http_access deny purge</code>):</p>
+
+<p><code>
+acl all src 0.0.0.0/0.0.0.0
+http_access allow all
+</code></p>
+
+<p>Откроем доступ к прокси по протоколу cache_mgr с локалхоста (я не помню, какие параметры указаны в дефолтном конфиге — так что не помешает перед вставкой проверить, что уже есть):</p>
+
+<p><code>
+acl manager proto cache_object # это строка, скорее всего, уже есть в конфиге
+http_access allow manager localhost
+http_access deny manager
+</code></p>
+
+<p>Слушать порт <code>8080</code> (по дефолту — <code>3128</code>):</p>
+
+<p><code>
+http_port 8080
+</code></p>
+
+<p>Для ограничения доступа к прокси — я предпочитаю использовать iptables (по-умолчанию — все пакеты отбрасываются), а не аутентификацию, поэтому прокся из конфига открыта для всех:</p>
+
+<p><code>bash
+iptables -N proxy
+iptables -A proxy -j REJECT
+iptables -I proxy -s 192.168.1.2 -j ACCEPT
+iptables -I INPUT -p tcp --dport 8080 -j proxy
+</code></p>
+
+<p>Теперь добавим родительские прокси (говорю сразу — с приведённой ниже конфигурацией — ничерта не заработает. но дальше, по ходу повествования — ошибка будет найдена и исправлена :)):</p>
+
+<p><code>
+cache_peer 127.0.0.1 parent 8081 0 no-query no-digest round-robin weight=4
+cache_peer 127.0.0.1 parent 8082 0 no-query no-digest round-robin weight=1
+cache_peer 192.168.1.2 parent 8080 0 no-query no-digest round-robin weight=4
+</code></p>
+
+<p>Итого — 3 родительских прокси, с которых не будет запрашиваться кэш (<code>no-query</code>) и cache-digest (<code>no-digest</code>), родители будут циклически переключаться (<code>round-robin</code>). Ну и разный <code>weight</code> — ибо 2й канал у меня слабый.
+Запрещаем сквиду ходить напрямую (не через родителей):</p>
+
+<p><code>
+never_direct allow all
+</code></p>
+
+<p>Создаём 2 копии конфига — <code>/etc/squid/squid_2.conf</code> и <code>/etc/squid/squid_3.conf</code>. Удаляем из них строки, начинающиеся на <code>cache_peer</code>, <code>never_direct</code>. Изменяем значение параметра <code>http_port</code> на <code>8081</code> и <code>8082</code> соответственно. Изменяем пути до логов (здесь и далее по тексту — изменения будут указываться только для <code>squid_2</code>, для <code>squid_3</code> — изменения аналогичны):</p>
+
+<p><code>
+access_log /var/log/squid_2/access.log
+cache_log /var/log/squid_2/cache.log
+</code></p>
+
+<p>Так же не помешает создать этот путь и сменить владельца, дабы сквид мог писать логи:</p>
+
+<p><code>
+mkdir /var/log/squid_2
+chown proxy:proxy /var/log/squid_2
+</code></p>
+
+<p>Указываем расположение pid-файла:
+<code>
+pid_filename /var/run/squid_2.pid
+</code></p>
+
+<p>Расположение кэша я не менял — все 3 прокси спокойно работают с 1 каталогом. Но <code>squid -z</code> (инициализировать кэш) перед первым запуском сделать не помешает.</p>
+
+<p>Теперь приступим к созданию init-скриптов. В файле <code>/etc/init.d/squid</code> комментируем код, ответственный за инициализацию кэша (т.к. скрипт не рассчитан на null-кэш):</p>
+
+<p>``` bash</p>
+
+<h1>if [ -d "$cdr" -a! -d "$cdr/00" ]</h1>
+
+<h1>then</h1>
+
+<h1>log_warning_msg «Creating squid spool directory structure»</h1>
+
+<h1>$DAEMON -z</h1>
+
+<h1>fi</h1>
+
+<p>```</p>
+
+<p>Копируем <code>/etc/init.d/squid</code> => <code>/etc/init.d/squid_2</code>.
+Изменяем <code>squid_2</code>:</p>
+
+<p><code>bash
+NAME=squid_2
+...
+SQUID_ARGS="-D -sYC -f /etc/squid/squid_2.conf"
+</code></p>
+
+<p>Так же, для душевного равновесия, можно изменить сообщения, которые выдаёт скрипт:</p>
+
+<p><code>
+log_daemon_msg «Starting Squid HTTP proxy» «squid_2»
+...
+log_daemon_msg «Stopping Squid HTTP proxy» «squid_2»
+...
+log_daemon_msg «Restarting Squid HTTP proxy» «squid_2»
+</code></p>
+
+<p>Для следующего фокуса — в начале инит-скрипта должны быть примерно следующие строки:
+```</p>
+
+<h1>Default-Start: 2 3 4 5</h1>
+
+<h1>Default-Stop: 0 1 6</h1>
+
+<p>```</p>
+
+<p>Настраиваем запуск свеже созданного сервиса с системой:
+<code>
+update-rc.d squid_2 defaults
+</code></p>
+
+<p>Запускаем дочерние прокси:
+<code>
+invoke-rc.d squid_2 start
+invoke-rc.d squid_3 start
+</code></p>
+
+<p>Вот он, момент истины — запускаем центральный прокси
+<code>
+invoke-rc.d squid start
+</code>
+и…
+<code>
+FATAL: ERROR: cache_peer 127.0.0.1 specified twice
+</code>
+… и нас жестоко обламывают.</p>
+
+<p>Немного подумав (руки до гугля не доходят) — заменяем в одной записи <code>127.0.0.1</code> => <code>localhost</code>.
+Запускаем, и вот оно — счастье.
+Сквид на 2й машине можно настроить копированием <code>/etc/squid/squid.conf</code> и удалением оттуда упоминаний о <code>cache_peer</code> и <code>never_direct</code> + поправить права доступа по протоколу <code>cache_mgr</code>.
+Для тестирования — настроить любимый браузер на использования прокси и открыть любую страницу. Смотрим <code>/var/log/squid/access.log</code>, там должны быть примерно следующие строки:
+<code>
+1214499645.364 15335 89.189.176.111 TCP_MISS/206 214755 GET ru.download.nvidia.com/Windows/177.41/177.41_geforce_winxp_64bit_international_whql.exe — ROUNDROBIN_PARENT/192.168.1.2 application/octet-stream
+1214499646.148 11138 89.189.176.111 TCP_MISS/206 534572 GET ru.download.nvidia.com/Windows/177.41/177.41_geforce_winvista_64bit_international_whql.exe — ROUNDROBIN_PARENT/127.0.0.1 application/octet-stream
+1214499650.695 3564 89.189.176.111 TCP_MISS/206 370947 GET ru.download.nvidia.com/Windows/177.41/177.41_geforce_winvista_64bit_international_whql.exe — ROUNDROBIN_PARENT/localhost application/octet-stream
+1214499658.899 52092 89.189.176.111 TCP_MISS/206 1115575 GET ru.download.nvidia.com/Windows/177.41/177.41_geforce_winvista_64bit_international_whql.exe — ROUNDROBIN_PARENT/192.168.1.2 application/octet-stream
+</code></p>
+
+<p>Далее по плану — SqStat. Скачиваем архив, распаковываем в любую www-папку, переименовываем <code>config.inc.php.defaults</code> => <code>config.inc.php</code> и правим:
+``` php
+$squidhost[0]=«localhost»;
+$squidport[0]=8080;
+$cachemgr_passwd[0]="";
+$resolveip[0]=false; # для красоты — можно и true поставить :)
+$hosts_file[0]=«hosts.txt»;
+$group_by[0]=«host»;</p>
+
+<p>$squidhost[]=«localhost»;
+$squidport[]=8081;
+$cachemgr_passwd[]="";
+$resolveip[]=false;
+$hosts_file[]=«hosts.txt»;
+$group_by[]=«host»;</p>
+
+<p>$squidhost[]=«localhost»;
+$squidport[]=8082;
+$cachemgr_passwd[]="";
+$resolveip[]=false;
+$hosts_file[]=«hosts.txt»;
+$group_by[]=«host»;</p>
+
+<p>$squidhost[]=«localhost»;
+$squidport[]=8081;
+$cachemgr_passwd[]="";
+$resolveip[]=false;
+$hosts_file[]=«hosts.txt»;
+$group_by[]=«host»;</p>
+
+<p>$squidhost[]=«192.168.1.2»;
+$squidport[]=8080;
+$cachemgr_passwd[]="";
+$resolveip[]=true;
+$hosts_file[]=«hosts.txt»;
+$group_by[]=«host»;
+```</p>
+
+<p>Открываем браузером sqstat.php и наблюдаем за активностью.</p>
+
+<p>Так же выкладываю немного изменённую версию SqStat — дополнительно отображает суммарную скорость\объём по параметру группировки — <a href="https://docs.google.com/file/d/0BxaH7RICY3lbMHRlRm00T3lpZ2M/edit?usp=sharing">sqstat.class.php</a>, файл нужно положить в папку с оригинальным sqstat, заменив оригинал.</p>
+
+<p>В пассивном режиме 3 сквида жрут 2.3% памяти, что в пересчёте на МБ составляет 14,72.</p>
+
+<p>P.S. # squid -v</p>
+
+<p>Squid Cache: Version 2.6.STABLE5</p>
+
+<p><strong>UPD</strong>: все же, надеюсь, понимают, что при скачивании в 1 поток через такую прокси — увеличения скорости не будет? для увеличения скорости необходимо запустить закачку с n потоками, где n — количество проксей в кластере (если веса одинаковы).</p>
+]]></content>
+  </entry>
+  
+</feed>

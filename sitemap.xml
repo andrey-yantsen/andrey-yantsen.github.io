@@ -1,15 +1,53 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
-        <loc>http://zvirusz.github.com/zvirusz/blog/archives/</loc>
-        <lastmod>2013-04-07T19:06:25+07:00</lastmod>
+        <loc>http://andrey.janzen.su//blog/2008/06/27/kaskadirovaniie-squidov/</loc>
+        <lastmod>2013-04-09T00:09:39+07:00</lastmod>
     </url>
     <url>
-        <loc>http://zvirusz.github.com/zvirusz/</loc>
-        <lastmod>2013-04-07T19:04:58+07:00</lastmod>
+        <loc>
+            http://andrey.janzen.su//blog/2008/07/25/nastroika-marshrutizatsii-po-dvum-provaidieram/
+        </loc>
+        <lastmod>2013-04-09T00:32:03+07:00</lastmod>
     </url>
     <url>
-        <loc>http://zvirusz.github.com/zvirusz/robots.txt</loc>
+        <loc>http://andrey.janzen.su//blog/archives/</loc>
+        <lastmod>2013-04-09T00:32:03+07:00</lastmod>
+    </url>
+    <url>
+        <loc>http://andrey.janzen.su//cv/art-and-science-cinema-distribution/</loc>
+        <lastmod>2013-04-08T23:29:24+07:00</lastmod>
+    </url>
+    <url>
+        <loc>http://andrey.janzen.su//cv/aviasales/</loc>
+        <lastmod>2013-04-08T23:30:20+07:00</lastmod>
+    </url>
+    <url>
+        <loc>http://andrey.janzen.su//cv/cae/</loc>
+        <lastmod>2013-04-08T23:29:40+07:00</lastmod>
+    </url>
+    <url>
+        <loc>http://andrey.janzen.su//cv/</loc>
+        <lastmod>2013-04-08T23:27:42+07:00</lastmod>
+    </url>
+    <url>
+        <loc>http://andrey.janzen.su//cv/megaritm/</loc>
+        <lastmod>2013-04-08T23:30:13+07:00</lastmod>
+    </url>
+    <url>
+        <loc>http://andrey.janzen.su//cv/taba/</loc>
+        <lastmod>2013-04-08T23:28:39+07:00</lastmod>
+    </url>
+    <url>
+        <loc>http://andrey.janzen.su//</loc>
+        <lastmod>2013-04-09T00:32:03+07:00</lastmod>
+    </url>
+    <url>
+        <loc>http://andrey.janzen.su//robots.txt</loc>
         <lastmod>2013-04-07T18:44:58+07:00</lastmod>
+    </url>
+    <url>
+        <loc>http://andrey.janzen.su//search.html</loc>
+        <lastmod>2013-04-08T12:29:31+07:00</lastmod>
     </url>
 </urlset>

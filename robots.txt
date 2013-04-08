@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: 
 
-Sitemap: http://zvirusz.github.com/zvirusz/sitemap.xml 
+Sitemap: http://andrey.janzen.su//sitemap.xml 

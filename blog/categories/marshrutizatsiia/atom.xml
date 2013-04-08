@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: маршрутизация | Бложек сурового пэхэпэшника]]></title>
+  <link href="http://andrey.janzen.su//blog/categories/marshrutizatsiia/atom.xml" rel="self"/>
+  <link href="http://andrey.janzen.su//"/>
+  <updated>2013-04-09T00:42:36+07:00</updated>
+  <id>http://andrey.janzen.su//</id>
+  <author>
+    <name><![CDATA[Андрей Янцен]]></name>
+    <email><![CDATA[andrey@janzen.su]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Настройка маршрутизации по двум провайдерам]]></title>
+    <link href="http://andrey.janzen.su//blog/2008/07/25/nastroika-marshrutizatsii-po-dvum-provaidieram/"/>
+    <updated>2008-07-25T13:48:00+07:00</updated>
+    <id>http://andrey.janzen.su//blog/2008/07/25/nastroika-marshrutizatsii-po-dvum-provaidieram</id>
+    <content type="html"><![CDATA[<p>Вчера столкнулся с небольшой проблемой — на машине с Win2k3 установлены 2 сетевых карты, 2 провайдера. Проблема оказалась следующая: подсети пересекаются (точнее — совпадают). Было решено использовать за основной шлюз 1го провайдера, а по внутрисетевым ресурсам гулять — через 2го. И всё бы ничего, но машина должна обслуживать входящие соединения с обоих интерфейсов. Но, благодаря статическим маршрутам, ответы на запросы из подсети <code>10.0.0.0/8</code>, пришедшей со стороны первого провайдера уходили через канал второго провайдера, что было, мягко говоря, не тем, что нужно. Как решить эту проблему под линухом — я знал (и тоже поведаю в этой заметке). Немного погуглив был найден вариант решения (в msdn'e наткнулись на управления приоритетами соединений). Коллега (WAJIM, привет) подумал — и нашёл 2й вариант. Потом немного (совсем немного) подумал я — и по аналогии появился 2й вариант решения для линуха :)
+Итого, под катом вас ожидает 4 варианта решения задачи маршрутизации по 2м провайдерам — 2 под виндовс и 2 под линукс.</p>
+
+<!-- more -->
+
+
+<p>Дано:</p>
+
+<ul>
+<li>2 физических фаервола, по совместительству являющихся шлюзами (<code>192.168.1.10</code> и <code>192.168.2.10</code>)</li>
+<li>2 сетевых интерфейса (lan1 — <code>192.168.1.101</code> и lan2 — <code>192.168.2.101</code>)</li>
+<li>желание заставить это добро работать так, как нужно нам</li>
+</ul>
+
+
+<p>Чтож... приступимс.</p>
+
+<ul>
+<li>Windows
+
+<ul>
+<li>Управление приоритетом сетевых подключений:<br />
+Необходимо создать 3 маршрута:
+<pre><code>route -p add 0.0.0.0 mask 0.0.0.0 192.168.1.10 metric 1
+route -p add 10.0.0.0 mask 255.0.0.0 192.168.1.10 metric 1
+route -p add 10.0.0.0 mask 255.0.0.0 192.168.2.10 metric 1</code></pre></li>
+</ul>
+
+
+<p>  Далее идём в Сетевые подключения -> Дополнительно -> Дополнительные параметры, перемещаем lan2 вверх, чтобы это соединение оказалось выше lan1. Готово.</p>
+
+<ul>
+<li>Приоритет в таблице маршрутизации:
+Опять же — создаём 3 маршрута. Только изменим метрики
+<pre><code>route -p add 0.0.0.0 mask 0.0.0.0 192.168.1.10 metric 1
+route -p add 10.0.0.0 mask 255.0.0.0 192.168.1.10 metric 2
+route -p add 10.0.0.0 mask 255.0.0.0 192.168.2.10 metric 1</code></pre>
+И никаких танцев с приоритетом интерфейсов. Считаю этот метод оптимальным.<br />
+<em>UPD</em>: метрика интерфеса, приоритет которого выше (см. предыдущий пункт) не должна быть наименьшей.</li>
+</ul>
+</li>
+<li>Linux
+
+<ul>
+<li>Приоритет в таблице маршрутизации: <br />
+Тут почти тоже самое, что и в предыдущем пункте (только синтаксис чуток различается)
+<pre><code>route add default gw 192.168.1.10 metric 0
+route add -net 10.0.0.0/8 gw 192.168.1.10 metric 1
+route add -net 10.0.0.0/8 gw 192.168.2.10 metric 0</code></pre></li>
+<li>iproute2: <br />
+Собственно, для этого решения необходимо наличие установленного пакета iproute2. В дебиане — <code>apt-get install iproute</code>.<br />
+В этом случае нам понадобится 2 маршрута
+<pre><code>route add default gw 192.168.1.10 metric 0
+route add -net 10.0.0.0/8 gw 192.168.2.10 metric 0</code></pre>
+Создадим 2 таблицы маршрутизации:
+<pre><code>echo '10 lan1' >> /etc/iproute2/rt_tables
+echo '11 lan2' >> /etc/iproute2/rt_tables</code></pre>
+Добавляем в эти таблицы правила маршрутизации:
+<pre><code>ip route add default via 192.168.1.10 table lan1
+ip rule add from 192.168.1.101 table lan1
+ip route add 127.0.0.0/8 dev lo table lan1
+ip route add default via 192.168.2.10 table lan2
+ip rule add from 192.168.2.101 table lan2
+ip route add 127.0.0.0/8 dev lo table lan2</code></pre>
+Последние правила — для того, чтобы пакеты с локального интерфейса не терялись.<br />
+Так же не стоит забывать, что линукс при перезагрузки очищает таблицы и правила маршрутизации, потому рекомендую создать хитрый скрипт в папке /etc/network/if-up.d. У меня там лежит скрипт такого содержания:
+<pre><code>#!/bin/sh -e
+case "$IFACE" in
+eth1)
+ip route add default via 192.168.1.10 table lan1
+ip rule add from 192.168.1.101 table lan1
+ip route add 127.0.0.0/8 dev lo table lan1
+;;
+eth2)
+route del default gw 192.168.2.101
+route add -net 10.0.0.0/8 gw 192.168.2.10 1
+ip route add default via 192.168.2.10 table lan2
+ip rule add from 192.168.2.101 table lan2
+ip route add 127.0.0.0/8 dev lo table lan2
+;;
+esac</code></pre></li>
+</ul>
+</li>
+</ul>
+
+
+<p>Выбор за вами. Скажу лишь что было решено остановиться на вторых вариантах для обоих систем (изменение метрики на windows и iproute2 на debian).</p>
+
+<p>Кому интересна тема маршрутизации в линуксе — рекомендую почитать вот эту вещь <a href="http://lartc.org/howto/">lartc.org/howto/</a>
+Надеюсь, кому‐ нибудь эта информация окажется полезной.</p>
+
+<p>И ещё раз, коллеги — с праздником :)</p>
+]]></content>
+  </entry>
+  
+</feed>

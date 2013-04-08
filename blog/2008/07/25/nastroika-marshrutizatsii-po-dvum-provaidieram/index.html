@@ -1,0 +1,280 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Настройка маршрутизации по двум провайдерам - Бложек сурового пэхэпэшника</title>
+    <meta name="author" content="Андрей Янцен">
+    
+	<meta name="description" content="Вчера столкнулся с небольшой проблемой — на машине с Win2k3 установлены 2 сетевых карты, 2 провайдера. Проблема оказалась следующая: подсети &hellip;">
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<link href="/atom.xml" rel="alternate" title="Бложек сурового пэхэпэшника" type="application/atom+xml">
+	<link rel="canonical" href="">
+	<link href="/favicon.ico" rel="shortcut icon">
+    <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+
+    <link href='http://fonts.googleapis.com/css?family=Slackey' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Amethysta' rel='stylesheet' type='text/css'>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+    <script type="text/javascript" src="/javascripts/jquery-tapir.js"></script>
+
+    <!-- remove or comment it to disable ajaxification -->   
+    <script src="/javascripts/ajaxify.js"></script>
+   
+    
+    
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-39939549-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+
+
+</head>
+
+
+<body>
+    <div id="wrapper">
+    <header id="header" class="inner"><!-- for more effects see _animate.scss -->
+<h1 class="animated bounceInDown">
+    <div id="headerbg">
+        Андрей Янцен
+    </div>
+</h1>
+<br>
+
+<ul id="social-links" style="text-align:center">
+  
+  <!-- GitHub -->
+  <li>
+  <a href="https://github.com/zvirusz" class="github" title="Github"></a>
+  </li>
+  
+  
+  <!-- Google Plus -->
+  <li>
+  <a href="http://plus.google.com/101201144561311806747?rel=author" class="google" title="Google+"></a>
+  </li>
+  
+  
+  
+  <!-- Twitter -->
+  <li>
+  <a href="http://www.twitter.com/zvirusz" class="twitter" title="Twitter"></a>
+  </li>
+  
+  
+  
+  
+  
+</ul>
+
+
+<!-- use full url including 'index.html' for navigation bar if you are using ajax -->
+<ul id="nav">
+	<li><a href="/index.html">Главная</a></li>
+	<li><a href="/blog/archives/index.html">Архив</a></li>
+    <li><a href="/atom.xml">RSS</a></li>
+    
+    <li>
+    <div id="dark">
+        <form method="get" action="/search.html" id="search">
+            <input name="query" type="text" placeholder="Поиск..." x-webkit-speech />
+        </form>
+    </div>
+    </li>
+    
+</ul>
+
+
+
+
+</header>
+
+<div id="toload">
+<!-- begin toload --> 
+    <div id="content" class="inner">
+        <article class="post">
+	<h2 class="title">Настройка маршрутизации по двум провайдерам</h2>
+	<div class="entry-content"><p>Вчера столкнулся с небольшой проблемой — на машине с Win2k3 установлены 2 сетевых карты, 2 провайдера. Проблема оказалась следующая: подсети пересекаются (точнее — совпадают). Было решено использовать за основной шлюз 1го провайдера, а по внутрисетевым ресурсам гулять — через 2го. И всё бы ничего, но машина должна обслуживать входящие соединения с обоих интерфейсов. Но, благодаря статическим маршрутам, ответы на запросы из подсети <code>10.0.0.0/8</code>, пришедшей со стороны первого провайдера уходили через канал второго провайдера, что было, мягко говоря, не тем, что нужно. Как решить эту проблему под линухом — я знал (и тоже поведаю в этой заметке). Немного погуглив был найден вариант решения (в msdn&#8217;e наткнулись на управления приоритетами соединений). Коллега (WAJIM, привет) подумал — и нашёл 2й вариант. Потом немного (совсем немного) подумал я — и по аналогии появился 2й вариант решения для линуха :)
+Итого, под катом вас ожидает 4 варианта решения задачи маршрутизации по 2м провайдерам — 2 под виндовс и 2 под линукс.</p>
+
+<!-- more -->
+
+
+<p>Дано:</p>
+
+<ul>
+<li>2 физических фаервола, по совместительству являющихся шлюзами (<code>192.168.1.10</code> и <code>192.168.2.10</code>)</li>
+<li>2 сетевых интерфейса (lan1 — <code>192.168.1.101</code> и lan2 — <code>192.168.2.101</code>)</li>
+<li>желание заставить это добро работать так, как нужно нам</li>
+</ul>
+
+
+<p>Чтож&#8230; приступимс.</p>
+
+<ul>
+<li>Windows
+
+<ul>
+<li>Управление приоритетом сетевых подключений:<br />
+Необходимо создать 3 маршрута:
+<pre><code>route -p add 0.0.0.0 mask 0.0.0.0 192.168.1.10 metric 1
+route -p add 10.0.0.0 mask 255.0.0.0 192.168.1.10 metric 1
+route -p add 10.0.0.0 mask 255.0.0.0 192.168.2.10 metric 1</code></pre></li>
+</ul>
+
+
+<p>  Далее идём в Сетевые подключения -> Дополнительно -> Дополнительные параметры, перемещаем lan2 вверх, чтобы это соединение оказалось выше lan1. Готово.</p>
+
+<ul>
+<li>Приоритет в таблице маршрутизации:
+Опять же — создаём 3 маршрута. Только изменим метрики
+<pre><code>route -p add 0.0.0.0 mask 0.0.0.0 192.168.1.10 metric 1
+route -p add 10.0.0.0 mask 255.0.0.0 192.168.1.10 metric 2
+route -p add 10.0.0.0 mask 255.0.0.0 192.168.2.10 metric 1</code></pre>
+И никаких танцев с приоритетом интерфейсов. Считаю этот метод оптимальным.<br />
+<em>UPD</em>: метрика интерфеса, приоритет которого выше (см. предыдущий пункт) не должна быть наименьшей.</li>
+</ul>
+</li>
+<li>Linux
+
+<ul>
+<li>Приоритет в таблице маршрутизации: <br />
+Тут почти тоже самое, что и в предыдущем пункте (только синтаксис чуток различается)
+<pre><code>route add default gw 192.168.1.10 metric 0
+route add -net 10.0.0.0/8 gw 192.168.1.10 metric 1
+route add -net 10.0.0.0/8 gw 192.168.2.10 metric 0</code></pre></li>
+<li>iproute2: <br />
+Собственно, для этого решения необходимо наличие установленного пакета iproute2. В дебиане — <code>apt-get install iproute</code>.<br />
+В этом случае нам понадобится 2 маршрута
+<pre><code>route add default gw 192.168.1.10 metric 0
+route add -net 10.0.0.0/8 gw 192.168.2.10 metric 0</code></pre>
+Создадим 2 таблицы маршрутизации:
+<pre><code>echo '10 lan1' >> /etc/iproute2/rt_tables
+echo '11 lan2' >> /etc/iproute2/rt_tables</code></pre>
+Добавляем в эти таблицы правила маршрутизации:
+<pre><code>ip route add default via 192.168.1.10 table lan1
+ip rule add from 192.168.1.101 table lan1
+ip route add 127.0.0.0/8 dev lo table lan1
+ip route add default via 192.168.2.10 table lan2
+ip rule add from 192.168.2.101 table lan2
+ip route add 127.0.0.0/8 dev lo table lan2</code></pre>
+Последние правила — для того, чтобы пакеты с локального интерфейса не терялись.<br />
+Так же не стоит забывать, что линукс при перезагрузки очищает таблицы и правила маршрутизации, потому рекомендую создать хитрый скрипт в папке /etc/network/if-up.d. У меня там лежит скрипт такого содержания:
+<pre><code>#!/bin/sh -e
+case "$IFACE" in
+eth1)
+ip route add default via 192.168.1.10 table lan1
+ip rule add from 192.168.1.101 table lan1
+ip route add 127.0.0.0/8 dev lo table lan1
+;;
+eth2)
+route del default gw 192.168.2.101
+route add -net 10.0.0.0/8 gw 192.168.2.10 1
+ip route add default via 192.168.2.10 table lan2
+ip rule add from 192.168.2.101 table lan2
+ip route add 127.0.0.0/8 dev lo table lan2
+;;
+esac</code></pre></li>
+</ul>
+</li>
+</ul>
+
+
+<p>Выбор за вами. Скажу лишь что было решено остановиться на вторых вариантах для обоих систем (изменение метрики на windows и iproute2 на debian).</p>
+
+<p>Кому интересна тема маршрутизации в линуксе — рекомендую почитать вот эту вещь <a href="http://lartc.org/howto/">lartc.org/howto/</a>
+Надеюсь, кому‐ нибудь эта информация окажется полезной.</p>
+
+<p>И ещё раз, коллеги — с праздником :)</p>
+</div>
+
+<div class="meta">
+	
+</div>
+</article>
+
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_counter addthis_pill_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+
+
+<section id="comment">
+    <h2 class="title">Comments</h2>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</section>
+
+    </div>
+    <footer id="footer">
+    <div style="display:inline">
+    Copyright &copy; 2013
+
+    Андрей Янцен
+. Powered by <a href="http://octopress.org">Octopress</a> | 
+    Theme <a href="http://github.com/panks/fabric">fabric</a> by <a href="http://panks.me">Pankaj Kumar</a>
+</div>
+
+
+    </footer>
+    <script src="/javascripts/fabric.js"></script>
+<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
+
+
+<script type="text/javascript">
+      var disqus_shortname = 'zvirusz';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://andrey.janzen.su//blog/2008/07/25/nastroika-marshrutizatsii-po-dvum-provaidieram/';
+        var disqus_url = 'http://andrey.janzen.su//blog/2008/07/25/nastroika-marshrutizatsii-po-dvum-provaidieram/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+<!-- end toload --> 
+</div>
+</div>
+<script src="/javascripts/jquery.ui.totop.js" type="text/javascript"></script>
+<script type="text/javascript">
+/*<![CDATA[*/
+;(function($){$().UItoTop({easingType:'easeOutCirc'});})(jQuery); 
+/*]]>*/
+</script><!-- remove it to remove the scroll to top button -->
+</body>
+</html>
