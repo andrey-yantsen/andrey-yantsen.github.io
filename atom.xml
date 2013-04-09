@@ -4,7 +4,7 @@
   <title><![CDATA[Бложек сурового пэхэпэшника]]></title>
   <link href="http://andrey.janzen.su//atom.xml" rel="self"/>
   <link href="http://andrey.janzen.su//"/>
-  <updated>2013-04-09T13:18:17+07:00</updated>
+  <updated>2013-04-09T21:14:07+07:00</updated>
   <id>http://andrey.janzen.su//</id>
   <author>
     <name><![CDATA[Андрей Янцен]]></name>
@@ -12,6 +12,69 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Расширяем функционал Monopoly City Streets]]></title>
+    <link href="http://andrey.janzen.su//blog/2009/10/23/rasshiriaiem-funktsional-monopoly-city-streets/"/>
+    <updated>2009-10-23T11:13:00+07:00</updated>
+    <id>http://andrey.janzen.su//blog/2009/10/23/rasshiriaiem-funktsional-monopoly-city-streets</id>
+    <content type="html"><![CDATA[<p>Разработчиками в MCS, к сожалению, не предусмотрена возможность застройки улицы большим количеством зданий за пару кликов мышкой. Но ведь игра написана на JS, так что ничего нам не мешает написать небольшой букмарклет, который и позволит нам добавить требуемый функционал.</p>
+
+<p>Весь код MCS находится в файле <a href="http://assets.monopolycitystreets.com/monopoly.1255614067.js">monopoly.1255614067.js</a>. Если посмотреть firebug&#8217;ом, что происходит в процессе покупки здания — мы увидим, что используются 2 функции — <code>MCS.BUILD.showLocations()</code> (для отображения маркеров доступных мест) и <code>MCS.BUILD.buyBuilding()</code> (для, собственно, покупки здания). После размышлений у меня получился следующий код:</p>
+
+<!-- more -->
+
+
+<div><script src='https://gist.github.com/0c8801a3c4d48c25d2d1.js'></script>
+<noscript><pre><code></code></pre></noscript></div>
+
+
+<p>Перед началом работы скрипт проводит несколько проверок: наличие класса MCS (в противном случае мы точно не на сайте игры), наличие авторизации у пользователя, а так же проверяется текущая выделенная улица. Далее выдаётся запрос для выяснения типа здания — список последних берётся из кода игры. Проверяется наличие денег у игрока и наличие свободных мест на улице. Затем выясняем количество домов для постройки и приступаем к этому увлекательному занятию. Чтобы пользователь не скучал — не забываем отобразить «песочные часы» в верхней панели. И, наконец, выводится количество построенных домов.</p>
+
+<p>Чтобы преобразовать этот скрипт в 1 строку — используем <a href="http://javascriptcompressor.com/">javascriptcompressor.com/</a>, в результате у нас почти есть букмарклет — остаётся только добавить &#8216;javascript:&#8217; в начало полученной строки.</p>
+
+<p>P.S. В качестве бонуса — букмарклет для отображения стоимости текущей улицы без зданий:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="nx">javascript</span><span class="o">:</span><span class="k">if</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">MCS</span> <span class="o">!=</span> <span class="s2">&quot;undefined&quot;</span><span class="o">&amp;&amp;</span><span class="nx">MCS</span><span class="p">.</span><span class="nx">STREET</span><span class="p">.</span><span class="nx">getStreetData</span><span class="p">().</span><span class="nx">data</span><span class="p">)</span><span class="nx">alert</span><span class="p">(</span><span class="nx">MCS</span><span class="p">.</span><span class="nx">STREET</span><span class="p">.</span><span class="nx">getStreetData</span><span class="p">().</span><span class="nx">data</span><span class="p">.</span><span class="nx">p</span><span class="o">*</span><span class="mi">1000</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><em>UPD</em> Букмарклет для пакетного удаления зданий:</p>
+
+<div><script src='https://gist.github.com/d8a91535a519f931e0aa.js'></script>
+<noscript><pre><code></code></pre></noscript></div>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Отслеживание iframe]]></title>
+    <link href="http://andrey.janzen.su//blog/2009/10/16/otsliezhivaniie-iframe/"/>
+    <updated>2009-10-16T22:36:00+07:00</updated>
+    <id>http://andrey.janzen.su//blog/2009/10/16/otsliezhivaniie-iframe</id>
+    <content type="html"><![CDATA[<p>Однажды мне надоели жалобы клиентов, вроде &#8220;на моём сайте вирус, сделайте что-нибудь!&#8221;. Объяснять людям об опасности сохранения паролей от ФТП на небезопасной машине так же надоело. Гениальное оказалось рядом - обычно поражаются файлы <code>index.*</code> и <code>default.*</code> - так почему бы не отслеживать изменение этих файлов. Сказано - сделано.</p>
+
+<!-- more -->
+
+
+<div><script src='https://gist.github.com/5345868.js'></script>
+<noscript><pre><code></code></pre></noscript></div>
+
+
+<p>Параметры:</p>
+
+<p><code>XFERLOG</code> - путь до файла <code>xferlog</code> (в vsftpd - нужно включить генерацию оного в конфиге, в proftpd - это параметр <code>TransferLog</code> конфигурации) в Вашей системе</p>
+
+<p><code>MATCH_FILES</code> - список исследуемых имён файлов (без расширений)</p>
+
+<p><code>EXCLUDE_LIST</code> - список игнорируемых файлов</p>
+
+<p>Сохраняем скрипт, выставляем права на исполнение, добавляем в крон.</p>
+
+<p>Всем спасибо за внимание, надеюсь кому-нибудь будет полезно.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Как установить Linux из сети]]></title>

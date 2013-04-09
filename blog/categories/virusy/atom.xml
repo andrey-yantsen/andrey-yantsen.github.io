@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: вирусы | Бложек сурового пэхэпэшника]]></title>
+  <link href="http://andrey.janzen.su//blog/categories/virusy/atom.xml" rel="self"/>
+  <link href="http://andrey.janzen.su//"/>
+  <updated>2013-04-09T21:14:07+07:00</updated>
+  <id>http://andrey.janzen.su//</id>
+  <author>
+    <name><![CDATA[Андрей Янцен]]></name>
+    <email><![CDATA[andrey@janzen.su]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Отслеживание iframe]]></title>
+    <link href="http://andrey.janzen.su//blog/2009/10/16/otsliezhivaniie-iframe/"/>
+    <updated>2009-10-16T22:36:00+07:00</updated>
+    <id>http://andrey.janzen.su//blog/2009/10/16/otsliezhivaniie-iframe</id>
+    <content type="html"><![CDATA[<p>Однажды мне надоели жалобы клиентов, вроде "на моём сайте вирус, сделайте что-нибудь!". Объяснять людям об опасности сохранения паролей от ФТП на небезопасной машине так же надоело. Гениальное оказалось рядом - обычно поражаются файлы <code>index.*</code> и <code>default.*</code> - так почему бы не отслеживать изменение этих файлов. Сказано - сделано.</p>
+
+<!-- more -->
+
+
+<p><div><script src='https://gist.github.com/5345868.js'></script>
+<noscript><pre><code></code></pre></noscript></div>
+</p>
+
+<p>Параметры:</p>
+
+<p><code>XFERLOG</code> - путь до файла <code>xferlog</code> (в vsftpd - нужно включить генерацию оного в конфиге, в proftpd - это параметр <code>TransferLog</code> конфигурации) в Вашей системе</p>
+
+<p><code>MATCH_FILES</code> - список исследуемых имён файлов (без расширений)</p>
+
+<p><code>EXCLUDE_LIST</code> - список игнорируемых файлов</p>
+
+<p>Сохраняем скрипт, выставляем права на исполнение, добавляем в крон.</p>
+
+<p>Всем спасибо за внимание, надеюсь кому-нибудь будет полезно.</p>
+]]></content>
+  </entry>
+  
+</feed>

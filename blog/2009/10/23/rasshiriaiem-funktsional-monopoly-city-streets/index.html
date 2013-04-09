@@ -1,0 +1,229 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Расширяем функционал Monopoly City Streets - Бложек сурового пэхэпэшника</title>
+    <meta name="author" content="Андрей Янцен">
+    
+	<meta name="description" content="Разработчиками в MCS, к сожалению, не предусмотрена возможность застройки улицы большим количеством зданий за пару кликов мышкой. Но ведь игра &hellip;">
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<link href="/atom.xml" rel="alternate" title="Бложек сурового пэхэпэшника" type="application/atom+xml">
+	<link rel="canonical" href="">
+	<link href="/favicon.ico" rel="shortcut icon">
+    <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+
+    <link href='http://fonts.googleapis.com/css?family=Slackey' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Amethysta' rel='stylesheet' type='text/css'>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+    <script type="text/javascript" src="/javascripts/jquery-tapir.js"></script>
+
+    <!-- remove or comment it to disable ajaxification -->   
+    <script src="/javascripts/ajaxify.js"></script>
+   
+    
+    
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-39939549-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+
+
+</head>
+
+
+<body>
+    <div id="wrapper">
+    <header id="header" class="inner"><h1>
+    <div id="headerbg">
+        Андрей Янцен
+    </div>
+</h1>
+<br>
+
+<ul id="social-links" style="text-align:center">
+  
+  <!-- GitHub -->
+  <li>
+  <a href="https://github.com/zvirusz" class="github" title="Github"></a>
+  </li>
+  
+  
+  <!-- Google Plus -->
+  <li>
+  <a href="http://plus.google.com/101201144561311806747?rel=author" class="google" title="Google+"></a>
+  </li>
+  
+  
+  
+  <!-- Twitter -->
+  <li>
+  <a href="http://www.twitter.com/zvirusz" class="twitter" title="Twitter"></a>
+  </li>
+  
+  
+  <!-- LinkedIn -->
+  <li>
+  <a href="http://www.linkedin.com/in/janzenandrey" class="linkedin" title="LinkedIn"></a>
+  </li>
+  
+  
+  <!-- Skype -->
+  <li>
+  <a href="http://myskype.info/andrey_janzen" class="skype" title="Skype"></a>
+  </li>
+  
+  
+  
+  <!-- LastFM -->
+  <li>
+  <a href="http://www.lastfm.com/user/virus126" class="lastfm" title="LastFM"></a>
+  </li>
+  
+</ul>
+
+
+<!-- use full url including 'index.html' for navigation bar if you are using ajax -->
+<ul id="nav">
+	<li><a href="/index.html">Главная</a></li>
+	<li><a href="/blog/archives/index.html">Архив</a></li>
+    <li><a href="/atom.xml">RSS</a></li>
+    
+    <li>
+    <div id="dark">
+        <form method="get" action="/search.html" id="search">
+            <input name="query" type="text" placeholder="Поиск..." x-webkit-speech />
+        </form>
+    </div>
+    </li>
+    
+</ul>
+
+
+
+
+</header>
+
+<div id="toload">
+<!-- begin toload --> 
+    <div id="content" class="inner">
+        <article class="post">
+	<h2 class="title">Расширяем функционал Monopoly City Streets</h2>
+	<div class="entry-content"><p>Разработчиками в MCS, к сожалению, не предусмотрена возможность застройки улицы большим количеством зданий за пару кликов мышкой. Но ведь игра написана на JS, так что ничего нам не мешает написать небольшой букмарклет, который и позволит нам добавить требуемый функционал.</p>
+
+<p>Весь код MCS находится в файле <a href="http://assets.monopolycitystreets.com/monopoly.1255614067.js">monopoly.1255614067.js</a>. Если посмотреть firebug&#8217;ом, что происходит в процессе покупки здания — мы увидим, что используются 2 функции — <code>MCS.BUILD.showLocations()</code> (для отображения маркеров доступных мест) и <code>MCS.BUILD.buyBuilding()</code> (для, собственно, покупки здания). После размышлений у меня получился следующий код:</p>
+
+<!-- more -->
+
+
+<div><script src='https://gist.github.com/0c8801a3c4d48c25d2d1.js'></script>
+<noscript><pre><code></code></pre></noscript></div>
+
+
+<p>Перед началом работы скрипт проводит несколько проверок: наличие класса MCS (в противном случае мы точно не на сайте игры), наличие авторизации у пользователя, а так же проверяется текущая выделенная улица. Далее выдаётся запрос для выяснения типа здания — список последних берётся из кода игры. Проверяется наличие денег у игрока и наличие свободных мест на улице. Затем выясняем количество домов для постройки и приступаем к этому увлекательному занятию. Чтобы пользователь не скучал — не забываем отобразить «песочные часы» в верхней панели. И, наконец, выводится количество построенных домов.</p>
+
+<p>Чтобы преобразовать этот скрипт в 1 строку — используем <a href="http://javascriptcompressor.com/">javascriptcompressor.com/</a>, в результате у нас почти есть букмарклет — остаётся только добавить &#8216;javascript:&#8217; в начало полученной строки.</p>
+
+<p>P.S. В качестве бонуса — букмарклет для отображения стоимости текущей улицы без зданий:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="nx">javascript</span><span class="o">:</span><span class="k">if</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">MCS</span> <span class="o">!=</span> <span class="s2">&quot;undefined&quot;</span><span class="o">&amp;&amp;</span><span class="nx">MCS</span><span class="p">.</span><span class="nx">STREET</span><span class="p">.</span><span class="nx">getStreetData</span><span class="p">().</span><span class="nx">data</span><span class="p">)</span><span class="nx">alert</span><span class="p">(</span><span class="nx">MCS</span><span class="p">.</span><span class="nx">STREET</span><span class="p">.</span><span class="nx">getStreetData</span><span class="p">().</span><span class="nx">data</span><span class="p">.</span><span class="nx">p</span><span class="o">*</span><span class="mi">1000</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><em>UPD</em> Букмарклет для пакетного удаления зданий:</p>
+
+<div><script src='https://gist.github.com/d8a91535a519f931e0aa.js'></script>
+<noscript><pre><code></code></pre></noscript></div>
+
+</div>
+
+<div class="meta">
+	
+</div>
+</article>
+
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_counter addthis_pill_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+
+
+<section id="comment">
+    <h2 class="title">Comments</h2>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</section>
+
+    </div>
+    <footer id="footer">
+    <div style="display:inline">
+    Copyright &copy; 2013
+
+    Андрей Янцен
+. Powered by <a href="http://octopress.org">Octopress</a> | 
+    Theme <a href="http://github.com/panks/fabric">fabric</a> by <a href="http://panks.me">Pankaj Kumar</a>
+</div>
+
+
+    </footer>
+    <script src="/javascripts/fabric.js"></script>
+<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
+
+
+<script type="text/javascript">
+      var disqus_shortname = 'zvirusz';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://andrey.janzen.su//blog/2009/10/23/rasshiriaiem-funktsional-monopoly-city-streets/';
+        var disqus_url = 'http://andrey.janzen.su//blog/2009/10/23/rasshiriaiem-funktsional-monopoly-city-streets/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+<!-- end toload --> 
+</div>
+</div>
+<script src="/javascripts/jquery.ui.totop.js" type="text/javascript"></script>
+<script type="text/javascript">
+/*<![CDATA[*/
+;(function($){$().UItoTop({easingType:'easeOutCirc'});})(jQuery); 
+/*]]>*/
+</script><!-- remove it to remove the scroll to top button -->
+</body>
+</html>

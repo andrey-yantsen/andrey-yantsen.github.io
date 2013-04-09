@@ -3,10 +3,10 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>Category: маршрутизация - Бложек сурового пэхэпэшника</title>
+	<title>Отслеживание iframe - Бложек сурового пэхэпэшника</title>
     <meta name="author" content="Андрей Янцен">
     
-	<meta name="description" content="Category: маршрутизация">
+	<meta name="description" content="Однажды мне надоели жалобы клиентов, вроде &#8220;на моём сайте вирус, сделайте что-нибудь!&#8221;. Объяснять людям об опасности сохранения паролей &hellip;">
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -119,29 +119,54 @@
 <div id="toload">
 <!-- begin toload --> 
     <div id="content" class="inner">
-        
+        <article class="post">
+	<h2 class="title">Отслеживание Iframe</h2>
+	<div class="entry-content"><p>Однажды мне надоели жалобы клиентов, вроде &#8220;на моём сайте вирус, сделайте что-нибудь!&#8221;. Объяснять людям об опасности сохранения паролей от ФТП на небезопасной машине так же надоело. Гениальное оказалось рядом - обычно поражаются файлы <code>index.*</code> и <code>default.*</code> - так почему бы не отслеживать изменение этих файлов. Сказано - сделано.</p>
+
+<!-- more -->
+
+
+<div><script src='https://gist.github.com/5345868.js'></script>
+<noscript><pre><code></code></pre></noscript></div>
+
+
+<p>Параметры:</p>
+
+<p><code>XFERLOG</code> - путь до файла <code>xferlog</code> (в vsftpd - нужно включить генерацию оного в конфиге, в proftpd - это параметр <code>TransferLog</code> конфигурации) в Вашей системе</p>
+
+<p><code>MATCH_FILES</code> - список исследуемых имён файлов (без расширений)</p>
+
+<p><code>EXCLUDE_LIST</code> - список игнорируемых файлов</p>
+
+<p>Сохраняем скрипт, выставляем права на исполнение, добавляем в крон.</p>
+
+<p>Всем спасибо за внимание, надеюсь кому-нибудь будет полезно.</p>
+</div>
+
+<div class="meta">
 	
-
-
-	
-	
-	<section class="archives"><h1 class="year">2008</h1>
-
-<article>
-	<h2 class="title"><a href="/blog/2008/07/25/nastroika-marshrutizatsii-po-dvum-provaidieram/">Настройка маршрутизации по двум провайдерам</a></h2>
-	<div class="meta">
-		<span class="date">Июл 25</span>
-		<span class="tags">
-
-
-	<a class='category' href='/blog/categories/iproute/'>iproute</a>, <a class='category' href='/blog/categories/administrirovaniie/'>администрирование</a>, <a class='category' href='/blog/categories/marshrutizatsiia/'>маршрутизация</a>
-
-
-</span>
-	    
-	</div>
+</div>
 </article>
 
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_counter addthis_pill_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+
+
+<section id="comment">
+    <h2 class="title">Comments</h2>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</section>
 
     </div>
     <footer id="footer">
@@ -168,7 +193,10 @@
       var disqus_shortname = 'zvirusz';
       
         
-        var disqus_script = 'count.js';
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://andrey.janzen.su//blog/2009/10/16/otsliezhivaniie-iframe/';
+        var disqus_url = 'http://andrey.janzen.su//blog/2009/10/16/otsliezhivaniie-iframe/';
+        var disqus_script = 'embed.js';
       
     (function () {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
