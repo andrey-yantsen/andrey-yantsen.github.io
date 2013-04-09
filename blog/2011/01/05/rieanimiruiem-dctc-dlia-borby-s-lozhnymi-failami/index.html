@@ -1,0 +1,267 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Реанимируем dctc для борьбы с ложными файлами - Бложек сурового пэхэпэшника</title>
+    <meta name="author" content="Андрей Янцен">
+    
+	<meta name="description" content="Года 4 назад у меня родилась идея - написать бота, который бы отслеживал активность в нашем локальном DC-хабе - просто логировал чат и выполнял &hellip;">
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<link href="/atom.xml" rel="alternate" title="Бложек сурового пэхэпэшника" type="application/atom+xml">
+	<link rel="canonical" href="">
+	<link href="/favicon.ico" rel="shortcut icon">
+    <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+
+    <link href='http://fonts.googleapis.com/css?family=Slackey' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Amethysta' rel='stylesheet' type='text/css'>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+    <script type="text/javascript" src="/javascripts/jquery-tapir.js"></script>
+
+    <!-- remove or comment it to disable ajaxification -->   
+    <script src="/javascripts/ajaxify.js"></script>
+   
+    
+    
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-39939549-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+
+
+</head>
+
+
+<body>
+    <div id="wrapper">
+    <header id="header" class="inner"><h1>
+    <div id="headerbg">
+        Андрей Янцен
+    </div>
+</h1>
+<br>
+
+<ul id="social-links" style="text-align:center">
+  
+  <!-- GitHub -->
+  <li>
+  <a href="https://github.com/zvirusz" class="github" title="Github"></a>
+  </li>
+  
+  
+  <!-- Google Plus -->
+  <li>
+  <a href="http://plus.google.com/101201144561311806747?rel=author" class="google" title="Google+"></a>
+  </li>
+  
+  
+  
+  <!-- Twitter -->
+  <li>
+  <a href="http://www.twitter.com/zvirusz" class="twitter" title="Twitter"></a>
+  </li>
+  
+  
+  <!-- LinkedIn -->
+  <li>
+  <a href="http://www.linkedin.com/in/janzenandrey" class="linkedin" title="LinkedIn"></a>
+  </li>
+  
+  
+  <!-- Skype -->
+  <li>
+  <a href="http://myskype.info/andrey_janzen" class="skype" title="Skype"></a>
+  </li>
+  
+  
+  
+  <!-- LastFM -->
+  <li>
+  <a href="http://www.lastfm.com/user/virus126" class="lastfm" title="LastFM"></a>
+  </li>
+  
+</ul>
+
+
+<!-- use full url including 'index.html' for navigation bar if you are using ajax -->
+<ul id="nav">
+	<li><a href="/index.html">Главная</a></li>
+	<li><a href="/blog/archives/index.html">Архив</a></li>
+    <li><a href="/atom.xml">RSS</a></li>
+    
+    <li>
+    <div id="dark">
+        <form method="get" action="/search.html" id="search">
+            <input name="query" type="text" placeholder="Поиск..." x-webkit-speech />
+        </form>
+    </div>
+    </li>
+    
+</ul>
+
+
+
+
+</header>
+
+<div id="toload">
+<!-- begin toload --> 
+    <div id="content" class="inner">
+        <article class="post">
+	<h2 class="title">Реанимируем Dctc для борьбы с ложными файлами</h2>
+	<div class="entry-content"><p>Года 4 назад у меня родилась идея - написать бота, который бы отслеживал активность в нашем локальном DC-хабе - просто логировал чат и выполнял простые команды в приват. За пару вечеров был найден прекрасный консольный клиент - <a href='http://ac2i.homelinux.com/dctc/'>dctc</a>, с которым можно взаимодействовать через unix-socket; а ещё за пару вечеров - написан простенький бот на php. При создании бота были внесены первые поправки в код dctc, чтобы он не посылал странные команды на сервер. Через некоторое время меня сделали модератором на этом самом хабе и я начал безжалостно банить. Но удобной системы для отслеживания количества банов у конкретных людей не было, но администратор каждые 5 минут генерировал информацию по текущим банам - ещё несколько убитых вечеров - и вот администрация обрела лёгкую возможность отслеживать порядковый номер бана.</p>
+
+<p>Спустя ещё несколько месяцев в сети стали появляться фэйки - это когда, например, скачиваешь Шрэка, а там вовсе даже не Шрэк, а красная шапочка и трое непонятных мужиков&#8230; Некоторое время боролись своими силами, но душа поэта не выдержала - и я решил улучшить бота.</p>
+
+<!-- more -->
+
+
+<ol>
+<li>В код dctc (v0.85.9) была добавлена обработка и хранение IP-адреса пользователя, проверка пользователя на online\offline, возможность отправки сырых команд на сервер.  Обмен файлами в современных сетях по-прежнему невозможен - клиент не дружит с TTH.</li>
+<li>В бота, находящегося на стороне сервера, добавлена функция отсылки &#8220;уведомлений&#8221; пользователям - человеку в общий чат и в ЛС отправляется указанное сообщение, после чего пользователь перенаправляется на несуществующий хаб. Т.о. если человек повторно зашёл на хаб - можно с достаточной долей уверенности сказать, что человек прочитал уведомление.</li>
+<li>Так же - при появлении пользователя на хабе к нему автоматически отправляются запросы на поиск нескольких самых распространённых TTH.</li>
+<li>В контекстном меню файлов добавилась функция &#8220;сообщить о фейке&#8221; - при использовании которой отправляется сообщение модераторам хаба с указанием TTH файла.</li>
+<li>Полностью переписан мой бот: функции для работы с DCTC вынесены в отдельный класс и этот класс расширяется функциями, специфичными для нашего хаба.</li>
+<li>Скрипт поиска решено было разбить на 2 части - одна из них лишь отправляет запросы на поиск, а вторая - занимается анализом ответов на эти самые запросы.</li>
+<li>Из-за того, что скрипт был внедрён спустя некоторое время, а не сразу же после возникновения проблемы - количество банов за фейки у пользователя ищется через общую таблицу банов, а не через отдельную.</li>
+<li>Перед баном - пользователю отсылается уведомление о наличии у него некорректных файлов и только если такое уведомление уже отсылалось - применяется бан на период, зависящий от количества подобных нарушений.</li>
+</ol>
+
+
+<p>При работе всей системы используются следующие таблицы:</p>
+
+<ul>
+<li><i>bans</i>: Глобальное хранилище банов</li>
+<li><i>fake_check</i>: Лог поиска фейков</li>
+<li><i>fake_list</i>: Список зарегистрированных фейков</li>
+<li><i>fake_names_order</i>: Списки файлов с запрещёнными и разрешёнными именами для каждого фейка</li>
+<li><i>fake_bans</i>: Баны за фейки, используется только для логирования</li>
+<li><i>fake_notifies</i>: Уведомления о наличии фейков, используется только для логирования</li>
+<li><i>fake_counter2</i>: Количество файлов, не отнесённых ни в разрешённый, ни в запрещённый списки</li>
+</ul>
+
+
+<p>Архив со всеми (кажется) необходимыми файлами: <a href="http://narod.ru/disk/2770034001/dctc.tar.bz2.html">dctc.tar.bz2.html</a>.
+Файлы:</p>
+
+<ul>
+<li><i>dctc.patch</i>: Патч, который нужно наложить на dctc версии 0.85.9</li>
+<li><i>dctc.sh</i>: Скрипт, которым я запускаю dctc. Он так же меняет права на доступ к сокету, т.о. всё члены группы dctc смогут с ним работать.</li>
+<li><i>dctcController.php</i>: Базовый класс для работы с сокетом dctc</li>
+<li><i>dctcController_tech.php</i>: Класс с настройками и дополнительными функциями для нашего хаба</li>
+<li><i>fakes.php</i>: Страница для управления базой фейков</li>
+<li><i>reply_analizer.php</i>: Анализатор ответов поиска - ведёт различные логи, уведомляет и банит пользователей</li>
+<li><i>search.php</i>: Инициирует поиск 20 произвольных фейков</li>
+<li><i>tables.sql</i>: Дамп структуры таблиц</li>
+</ul>
+
+
+<p>Накладываем патч:
+Скачиваем <a href="http://ac2i.homelinux.com/dctc/dctc-0.85.9.tar.gz">http://ac2i.homelinux.com/dctc/dctc-0.85.9.tar.gz</a>, распаковываем, командуем <code>patch -p1 -ddctc-0.85.9 &lt; dctc.patch</code>.
+Основная цель патча - добавить в dctc поддержку команды <a href="http://www.teamfair.info/wiki/index.php?title=$UserIP">$UserIP</a> - дабы мы могли узнавать IP-адрес пользователя, которого хотим банить.
+Самое интересное так это то, что dctc нормально работает после моего патча - c/c++ я знаю только по университетскому курсу. Всё как-то на php больше быдлокожу&#8230;</p>
+
+<p>Компилируем, устанавливаем, запускаем dctc. Как его запускать - смотрим в dctc.sh.</p>
+
+<p>Дальше нужно поправить класс dctcController_tech - команды на бан и уведомление у вас, скорее всего, другие. Да и hubCharset, возможно, тоже отличается.
+В переменной $_socketPathFile лежит путь до файла, в котором сохраняется путь до сокета. Вот такое вот извращение.
+Для ограничения частоты поиска используется shared memory - дёшево и сердито. <a href="http://ru2.php.net/manual/en/sem.installation.php">Убедитесь</a>, что ваш php это умеет.</p>
+
+<p>Инициализируем БД и через fakes.php записываем всякие нехорошие TTH в базу.</p>
+
+<p>Затем в фоне (или в скрине, кому как больше нравится) запускаем скрипт reply_analizer.php - он будет молча делать свои грязные делишки.</p>
+
+<p>Дальше настраиваем периодический запуск search.php и наслаждаемся массовыми расстрелами.</p>
+
+<p>Надеюсь кому-нибудь в чём-нибудь да поможет.</p>
+</div>
+
+<div class="meta">
+	
+</div>
+</article>
+
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_counter addthis_pill_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+
+
+<section id="comment">
+    <h2 class="title">Comments</h2>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</section>
+
+    </div>
+    <footer id="footer">
+    <div style="display:inline">
+    Copyright &copy; 2013
+
+    Андрей Янцен
+. Powered by <a href="http://octopress.org">Octopress</a> | 
+    Theme <a href="http://github.com/panks/fabric">fabric</a> by <a href="http://panks.me">Pankaj Kumar</a>
+</div>
+
+
+    </footer>
+    <script src="/javascripts/fabric.js"></script>
+<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
+
+
+<script type="text/javascript">
+      var disqus_shortname = 'zvirusz';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://andrey.janzen.su//blog/2011/01/05/rieanimiruiem-dctc-dlia-borby-s-lozhnymi-failami/';
+        var disqus_url = 'http://andrey.janzen.su//blog/2011/01/05/rieanimiruiem-dctc-dlia-borby-s-lozhnymi-failami/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+<!-- end toload --> 
+</div>
+</div>
+<script src="/javascripts/jquery.ui.totop.js" type="text/javascript"></script>
+<script type="text/javascript">
+/*<![CDATA[*/
+;(function($){$().UItoTop({easingType:'easeOutCirc'});})(jQuery); 
+/*]]>*/
+</script><!-- remove it to remove the scroll to top button -->
+</body>
+</html>

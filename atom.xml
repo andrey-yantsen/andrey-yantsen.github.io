@@ -4,7 +4,7 @@
   <title><![CDATA[Бложек сурового пэхэпэшника]]></title>
   <link href="http://andrey.janzen.su//atom.xml" rel="self"/>
   <link href="http://andrey.janzen.su//"/>
-  <updated>2013-04-09T21:15:35+07:00</updated>
+  <updated>2013-04-09T23:31:35+07:00</updated>
   <id>http://andrey.janzen.su//</id>
   <author>
     <name><![CDATA[Андрей Янцен]]></name>
@@ -12,6 +12,304 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Отправка уведомлений на почту при деплое проекта]]></title>
+    <link href="http://andrey.janzen.su//blog/2011/08/19/otpravka-uviedomlienii-na-pochtu-pri-dieploie-proiekta/"/>
+    <updated>2011-08-19T12:02:00+07:00</updated>
+    <id>http://andrey.janzen.su//blog/2011/08/19/otpravka-uviedomlienii-na-pochtu-pri-dieploie-proiekta</id>
+    <content type="html"><![CDATA[<p>В нашем проекте при каждом деплое разработчики, тестеры и ещё пара людей получают замечательные письма:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Subject: Наш проект версии v1.1.1 обновлён на сервере 'testing'
+</span><span class='line'>
+</span><span class='line'>user1 выложил следующие обновления на сервер 'testing':
+</span><span class='line'>
+</span><span class='line'>Коммиты по задачам:
+</span><span class='line'>http://jira.local/browse/PROJECT-1234
+</span><span class='line'>
+</span><span class='line'>Полный список коммитов с предыдущего обновления:
+</span><span class='line'>4392a53 Thu Aug 18 17:50:32 2011 +0700 user1 / [PROJECT-1234] сделал полезное
+</span><span class='line'>f2fcfe2 Thu Aug 18 17:37:53 2011 +0700 user1 / сделал страшное
+</span><span class='line'>cb1fcbe Wed Aug 17 15:18:10 2011 +0700 user2 / зарефакторил
+</span><span class='line'>
+</span><span class='line'>Изменения по файлам:
+</span><span class='line'> file1                 |    4 ++--
+</span><span class='line'> file2                 |    8 ++++----
+</span><span class='line'> file3                 |    8 ++++----
+</span><span class='line'> 3 files changed, 10 insertions(+), 10 deletions(-)</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Такое решение помогло нам избавиться от вопросов тестеров &#8220;Ну что, выложили уже исправление бага XXX?&#8221;, &#8220;Что нового на тестовом сервере?&#8221;. Так же - все члены команды, отдел внедрения и руководство в курсе, что происходит с кодом на серверах.
+Для работы используется git, capistrano (+ multistage), php, bash (+ некоторые консольные утилитки). Если интересно - заходим под кат.</p>
+
+<!-- more -->
+
+
+
+
+<h1>Алгоритм работы</h1>
+
+
+<ul><li>Обновляем код на сервере testing (cap testing deploy)</li><li>После deploy:restart срабатывает хук, создающий тег в репозитории. Тег формируется на основе версии проекта (хранится в конфиге, в репозитории), названии staging-сервера и названии релиза</li><li>В репозитории срабатывает хук. Если пришёл не тег - игнорируем, если же тег:<ul><li>Распиливаем его на компоненты: версия, сервер</li><li>Определяем предыдущий тег на этом же сервере</li><li>Если тега нет - значит эта первая установка и генерировать различия не стоит, там может быть несколько тысяч коммитов</li><li>Если же есть тег - генерируем список различий, выдёргиваем из них список задач; составляем список изменённых файлов</li><li>Отправка сгенерированного письма</li></ul></li></ul>
+
+
+<h1>Создание тега</h1>
+
+
+<p>Про настройку capistrano и capistrano-multistage уже где только не написано, поэтому я только расскажу, как у нас добавляется тег.</p>
+
+<p>Будем считать, что у нас в корне репозитория есть файл <i>configs.ini</i>, который содержит ключ <i>runtime.version</i>. За основу был взят <a href='https://gist.github.com/381852'>gist#381852</a>.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">namespace</span> <span class="ss">:deploy</span> <span class="k">do</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">after</span> <span class="s2">&quot;deploy:restart&quot;</span><span class="p">,</span> <span class="s2">&quot;deploy:git:push_deploy_tag&quot;</span>
+</span><span class='line'>  <span class="n">namespace</span> <span class="ss">:git</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">desc</span> <span class="s2">&quot;Place release tag into Git and push it to server.&quot;</span>
+</span><span class='line'>    <span class="n">task</span> <span class="ss">:push_deploy_tag</span> <span class="k">do</span>
+</span><span class='line'>      <span class="n">user</span> <span class="o">=</span> <span class="sb">`git config --get user.name`</span><span class="o">.</span><span class="n">strip</span>
+</span><span class='line'>      <span class="n">email</span> <span class="o">=</span> <span class="sb">`git config --get user.email`</span><span class="o">.</span><span class="n">strip</span>
+</span><span class='line'>      <span class="n">version</span> <span class="o">=</span> <span class="sb">`git cat-file -p </span><span class="si">#{</span><span class="n">real_revision</span><span class="si">}</span><span class="sb">:configs.ini | fgrep runtime.version | awk -F &#39;[ =]+&#39; &#39;{print $2}&#39;`</span><span class="o">.</span><span class="n">strip</span>
+</span><span class='line'>      <span class="nb">puts</span> <span class="sb">`git tag v</span><span class="si">#{</span><span class="n">version</span><span class="si">}</span><span class="sb">-</span><span class="si">#{</span><span class="n">stage</span><span class="si">}</span><span class="sb">-</span><span class="si">#{</span><span class="n">release_name</span><span class="si">}</span><span class="sb"> </span><span class="si">#{</span><span class="n">real_revision</span><span class="si">}</span><span class="sb"> -m &quot;Deployed by </span><span class="si">#{</span><span class="n">user</span><span class="si">}</span><span class="sb"> &lt;</span><span class="si">#{</span><span class="n">email</span><span class="si">}</span><span class="sb">&gt;&quot;`</span>
+</span><span class='line'>      <span class="nb">puts</span> <span class="sb">`git push --tags`</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Что здесь происходит:<ul><li>Извлекаем данные текущего пользователя (имя и почту) из конфига гита</li><li>Берём файл configs.ini из устанавливаемой ревизии и выдёргиваем версию</li><li>Создаём аннотированный тэг. В аннотации указываем, кто и когда задеплоил</li><li>Публикуем теги</li></ul></p>
+
+<h1>Обрабатываем обновление репозитория</h1>
+
+
+<p>Хуку <i>pre-receive</i> на вход (stdin) подётся 3 значения: предыдущая и текущая ревизии, refname.
+Читаем входящие параметры и убеждаемся, что пришёл тег:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="k">while </span><span class="nb">read </span>oldrev newrev refname
+</span><span class='line'><span class="k">do</span>
+</span><span class='line'><span class="k">    </span><span class="nv">rev_type</span><span class="o">=</span><span class="k">$(</span>git cat-file -t <span class="nv">$newrev</span> 2&gt;/dev/null<span class="k">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">case</span> <span class="s2">&quot;$refname&quot;</span>,<span class="s2">&quot;$rev_type&quot;</span> in
+</span><span class='line'>        refs/tags/*,tag<span class="o">)</span>
+</span><span class='line'>        ;;
+</span><span class='line'>    <span class="k">esac</span>
+</span><span class='line'><span class="k">done</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Выделяем название тега, разбиваем его на части, ищем предыдущий тег для этого сервера:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">tag</span><span class="o">=</span><span class="k">${</span><span class="nv">refname</span><span class="p">##refs/tags/</span><span class="k">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nv">version</span><span class="o">=</span><span class="sb">`</span><span class="nb">echo</span> <span class="nv">$tag</span> | cut -d- -f1<span class="sb">`</span>
+</span><span class='line'><span class="nv">server</span><span class="o">=</span><span class="sb">`</span><span class="nb">echo</span> <span class="nv">$tag</span> | cut -d- -f2<span class="sb">`</span>
+</span><span class='line'><span class="nv">prevtag</span><span class="o">=</span><span class="k">$(</span>git describe --tags --abbrev<span class="o">=</span>0 --match<span class="o">=</span><span class="s2">&quot;*-$server-*&quot;</span> <span class="nv">$newrev</span>^ 2&gt;/dev/null<span class="k">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Если в $prevtag пусто - значит это первая установка на сервер. Если версия у нового и старого тега совпадает - это обновление, если же нет - установка новой версии. Таким образом мы генерируем корректный заголовок письма.</p>
+
+<p>Начнём формировать тело письма. Сперва - определим кто осмелился задеплоить:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">eval</span> <span class="k">$(</span>git <span class="k">for</span>-each-ref --shell --format<span class="o">=</span><span class="s1">&#39;</span>
+</span><span class='line'><span class="s1">          tagger=%(taggername)</span>
+</span><span class='line'><span class="s1">          tagged=%(taggerdate)&#39;</span> <span class="nv">$refname</span>
+</span><span class='line'>        <span class="k">)</span>
+</span><span class='line'><span class="nb">echo</span> <span class="s2">&quot;$tagger выложил следующие обновления на сервер &#39;$server&#39;:&quot;</span> &gt; msg
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Теперь разберём коммиты по задачам. Последние в Jira именуются по маске &lt;алиас проекта&gt;-&lt;id задачи&gt;, все разработчики в обязательном порядке указывают алиас задачи (uppercase) в коммите. Если задача крупнее чем на 30 минут и требует более 1 коммита - создаётся ветка, по алиасу задачи, и тогда в коммитах эту самую задачу мы уже не упоминаем. Итого, чтобы достать список задач нам нужно выполнить не сложную обработку регуляркой:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>git log <span class="nv">$rev_range</span> --abbrev-commit --pretty<span class="o">=</span><span class="s2">&quot;format:%s&quot;</span> &gt; tmpfile
+</span><span class='line'>php &gt;tickets <span class="s">&lt;&lt;END</span>
+</span><span class='line'><span class="s">&lt;?php</span>
+</span><span class='line'><span class="s">\$f = file_get_contents(&quot;$tmp&quot;);</span>
+</span><span class='line'><span class="s">if (preg_match_all(&quot;#([A-Z.]+-\d+)#&quot;, \$f, \$matches)) {</span>
+</span><span class='line'><span class="s">    \$matches[1] = array_unique(\$matches[1]);</span>
+</span><span class='line'><span class="s">    foreach (\$matches[1] as \$match) {</span>
+</span><span class='line'><span class="s">        echo &#39;$JIRA_HOST/browse/&#39;, \$match, PHP_EOL;</span>
+</span><span class='line'><span class="s">    }</span>
+</span><span class='line'><span class="s">}</span>
+</span><span class='line'><span class="s">END</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Если в итоге файл <i>tmpfile</i> не пуст - добавляем его к телу письма.
+Дальше идёт информация, которая интересует только разработчиков проекта: списки коммитов и изменённых файлов:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> <span class="s2">&quot;Полный список коммитов с предыдущего обновления:&quot;</span> &gt;&gt; msg
+</span><span class='line'>git log <span class="nv">$rev_range</span> --no-merges --abbrev-commit --pretty<span class="o">=</span><span class="s2">&quot;format:%h %ad %an / %s&quot;</span> &gt;&gt; msg
+</span><span class='line'>
+</span><span class='line'><span class="nb">echo</span> -e <span class="s2">&quot;\n\nИзменения по файлам:&quot;</span> &gt;&gt;msg
+</span><span class='line'>git diff --stat<span class="o">=</span>140,110 <span class="nv">$rev_range</span> &gt;&gt;msg
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Ну и, наконец, тупая отправка письма:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>cat msg | mail -s <span class="s2">&quot;$subject&quot;</span> <span class="nv">$MAIL_TO</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Все файлы можно взять на гитхабе: <a href="https://github.com/zvirusz/git-deploy-notify">https://github.com/zvirusz/git-deploy-notify</a></p>
+
+<p>P.S. Если кто-нибудь поможет переписать кусок кода, выдёргивающий имена задач, на perl/bash - я буду очень рад.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Реанимируем dctc для борьбы с ложными файлами]]></title>
+    <link href="http://andrey.janzen.su//blog/2011/01/05/rieanimiruiem-dctc-dlia-borby-s-lozhnymi-failami/"/>
+    <updated>2011-01-05T14:39:00+07:00</updated>
+    <id>http://andrey.janzen.su//blog/2011/01/05/rieanimiruiem-dctc-dlia-borby-s-lozhnymi-failami</id>
+    <content type="html"><![CDATA[<p>Года 4 назад у меня родилась идея - написать бота, который бы отслеживал активность в нашем локальном DC-хабе - просто логировал чат и выполнял простые команды в приват. За пару вечеров был найден прекрасный консольный клиент - <a href='http://ac2i.homelinux.com/dctc/'>dctc</a>, с которым можно взаимодействовать через unix-socket; а ещё за пару вечеров - написан простенький бот на php. При создании бота были внесены первые поправки в код dctc, чтобы он не посылал странные команды на сервер. Через некоторое время меня сделали модератором на этом самом хабе и я начал безжалостно банить. Но удобной системы для отслеживания количества банов у конкретных людей не было, но администратор каждые 5 минут генерировал информацию по текущим банам - ещё несколько убитых вечеров - и вот администрация обрела лёгкую возможность отслеживать порядковый номер бана.</p>
+
+<p>Спустя ещё несколько месяцев в сети стали появляться фэйки - это когда, например, скачиваешь Шрэка, а там вовсе даже не Шрэк, а красная шапочка и трое непонятных мужиков&#8230; Некоторое время боролись своими силами, но душа поэта не выдержала - и я решил улучшить бота.</p>
+
+<!-- more -->
+
+
+<ol>
+<li>В код dctc (v0.85.9) была добавлена обработка и хранение IP-адреса пользователя, проверка пользователя на online\offline, возможность отправки сырых команд на сервер.  Обмен файлами в современных сетях по-прежнему невозможен - клиент не дружит с TTH.</li>
+<li>В бота, находящегося на стороне сервера, добавлена функция отсылки &#8220;уведомлений&#8221; пользователям - человеку в общий чат и в ЛС отправляется указанное сообщение, после чего пользователь перенаправляется на несуществующий хаб. Т.о. если человек повторно зашёл на хаб - можно с достаточной долей уверенности сказать, что человек прочитал уведомление.</li>
+<li>Так же - при появлении пользователя на хабе к нему автоматически отправляются запросы на поиск нескольких самых распространённых TTH.</li>
+<li>В контекстном меню файлов добавилась функция &#8220;сообщить о фейке&#8221; - при использовании которой отправляется сообщение модераторам хаба с указанием TTH файла.</li>
+<li>Полностью переписан мой бот: функции для работы с DCTC вынесены в отдельный класс и этот класс расширяется функциями, специфичными для нашего хаба.</li>
+<li>Скрипт поиска решено было разбить на 2 части - одна из них лишь отправляет запросы на поиск, а вторая - занимается анализом ответов на эти самые запросы.</li>
+<li>Из-за того, что скрипт был внедрён спустя некоторое время, а не сразу же после возникновения проблемы - количество банов за фейки у пользователя ищется через общую таблицу банов, а не через отдельную.</li>
+<li>Перед баном - пользователю отсылается уведомление о наличии у него некорректных файлов и только если такое уведомление уже отсылалось - применяется бан на период, зависящий от количества подобных нарушений.</li>
+</ol>
+
+
+<p>При работе всей системы используются следующие таблицы:</p>
+
+<ul>
+<li><i>bans</i>: Глобальное хранилище банов</li>
+<li><i>fake_check</i>: Лог поиска фейков</li>
+<li><i>fake_list</i>: Список зарегистрированных фейков</li>
+<li><i>fake_names_order</i>: Списки файлов с запрещёнными и разрешёнными именами для каждого фейка</li>
+<li><i>fake_bans</i>: Баны за фейки, используется только для логирования</li>
+<li><i>fake_notifies</i>: Уведомления о наличии фейков, используется только для логирования</li>
+<li><i>fake_counter2</i>: Количество файлов, не отнесённых ни в разрешённый, ни в запрещённый списки</li>
+</ul>
+
+
+<p>Архив со всеми (кажется) необходимыми файлами: <a href="http://narod.ru/disk/2770034001/dctc.tar.bz2.html">dctc.tar.bz2.html</a>.
+Файлы:</p>
+
+<ul>
+<li><i>dctc.patch</i>: Патч, который нужно наложить на dctc версии 0.85.9</li>
+<li><i>dctc.sh</i>: Скрипт, которым я запускаю dctc. Он так же меняет права на доступ к сокету, т.о. всё члены группы dctc смогут с ним работать.</li>
+<li><i>dctcController.php</i>: Базовый класс для работы с сокетом dctc</li>
+<li><i>dctcController_tech.php</i>: Класс с настройками и дополнительными функциями для нашего хаба</li>
+<li><i>fakes.php</i>: Страница для управления базой фейков</li>
+<li><i>reply_analizer.php</i>: Анализатор ответов поиска - ведёт различные логи, уведомляет и банит пользователей</li>
+<li><i>search.php</i>: Инициирует поиск 20 произвольных фейков</li>
+<li><i>tables.sql</i>: Дамп структуры таблиц</li>
+</ul>
+
+
+<p>Накладываем патч:
+Скачиваем <a href="http://ac2i.homelinux.com/dctc/dctc-0.85.9.tar.gz">http://ac2i.homelinux.com/dctc/dctc-0.85.9.tar.gz</a>, распаковываем, командуем <code>patch -p1 -ddctc-0.85.9 &lt; dctc.patch</code>.
+Основная цель патча - добавить в dctc поддержку команды <a href="http://www.teamfair.info/wiki/index.php?title=$UserIP">$UserIP</a> - дабы мы могли узнавать IP-адрес пользователя, которого хотим банить.
+Самое интересное так это то, что dctc нормально работает после моего патча - c/c++ я знаю только по университетскому курсу. Всё как-то на php больше быдлокожу&#8230;</p>
+
+<p>Компилируем, устанавливаем, запускаем dctc. Как его запускать - смотрим в dctc.sh.</p>
+
+<p>Дальше нужно поправить класс dctcController_tech - команды на бан и уведомление у вас, скорее всего, другие. Да и hubCharset, возможно, тоже отличается.
+В переменной $_socketPathFile лежит путь до файла, в котором сохраняется путь до сокета. Вот такое вот извращение.
+Для ограничения частоты поиска используется shared memory - дёшево и сердито. <a href="http://ru2.php.net/manual/en/sem.installation.php">Убедитесь</a>, что ваш php это умеет.</p>
+
+<p>Инициализируем БД и через fakes.php записываем всякие нехорошие TTH в базу.</p>
+
+<p>Затем в фоне (или в скрине, кому как больше нравится) запускаем скрипт reply_analizer.php - он будет молча делать свои грязные делишки.</p>
+
+<p>Дальше настраиваем периодический запуск search.php и наслаждаемся массовыми расстрелами.</p>
+
+<p>Надеюсь кому-нибудь в чём-нибудь да поможет.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[QR для оплаты по СМС]]></title>
+    <link href="http://andrey.janzen.su//blog/2010/06/28/qr-dlia-oplaty-po-sms/"/>
+    <updated>2010-06-28T17:32:00+07:00</updated>
+    <id>http://andrey.janzen.su//blog/2010/06/28/qr-dlia-oplaty-po-sms</id>
+    <content type="html"><![CDATA[<p>Сегодня первый раз в жизни производил оплату услуги через SMS, и чтобы не нажимать на неудобные, маленькие кнопочки смартфона я просто открыл <a href="http://qrcode.kaywa.com/">qrcode.kaywa.com</a> и заполнил необходимые поля на компьютере, затем скормил картинку сканеру штрих-кодов на телефоне — и получил готовую SMS (с заполненным номером и текстом) — оставалось только нажать «отправить».</p>
+
+<p>Так вот, почему бы вам, господам принимающим оплату через SMS не упростить жизнь пользователю и не добавить небольшую картинку рядом с информацией о платеже? Благо делается это предельно просто — например код по ссылке <a href="http://chart.apis.google.com/chart?cht=qr&amp;chs=135x135&amp;chl=SMSTO:01:abcdef123">chart.apis.google.com/&#8230;/</a> сгенерирует сообщение на номер 01 с текстом abcdef123. Да и существуют готовые решения для генерации QR-кодов для популярных языков программирования, если у вас нет желания зависеть от гугла.</p>
+
+<p>Реализовать не сложно (разве что в дизайн вписать), а пользователю — приятно.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Расширяем функционал Monopoly City Streets]]></title>

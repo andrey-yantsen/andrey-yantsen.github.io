@@ -1,0 +1,422 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Отправка уведомлений на почту при деплое проекта - Бложек сурового пэхэпэшника</title>
+    <meta name="author" content="Андрей Янцен">
+    
+	<meta name="description" content="В нашем проекте при каждом деплое разработчики, тестеры и ещё пара людей получают замечательные письма: 1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17 &hellip;">
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<link href="/atom.xml" rel="alternate" title="Бложек сурового пэхэпэшника" type="application/atom+xml">
+	<link rel="canonical" href="">
+	<link href="/favicon.ico" rel="shortcut icon">
+    <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+
+    <link href='http://fonts.googleapis.com/css?family=Slackey' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Amethysta' rel='stylesheet' type='text/css'>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+    <script type="text/javascript" src="/javascripts/jquery-tapir.js"></script>
+
+    <!-- remove or comment it to disable ajaxification -->   
+    <script src="/javascripts/ajaxify.js"></script>
+   
+    
+    
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-39939549-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+
+
+</head>
+
+
+<body>
+    <div id="wrapper">
+    <header id="header" class="inner"><h1>
+    <div id="headerbg">
+        Андрей Янцен
+    </div>
+</h1>
+<br>
+
+<ul id="social-links" style="text-align:center">
+  
+  <!-- GitHub -->
+  <li>
+  <a href="https://github.com/zvirusz" class="github" title="Github"></a>
+  </li>
+  
+  
+  <!-- Google Plus -->
+  <li>
+  <a href="http://plus.google.com/101201144561311806747?rel=author" class="google" title="Google+"></a>
+  </li>
+  
+  
+  
+  <!-- Twitter -->
+  <li>
+  <a href="http://www.twitter.com/zvirusz" class="twitter" title="Twitter"></a>
+  </li>
+  
+  
+  <!-- LinkedIn -->
+  <li>
+  <a href="http://www.linkedin.com/in/janzenandrey" class="linkedin" title="LinkedIn"></a>
+  </li>
+  
+  
+  <!-- Skype -->
+  <li>
+  <a href="http://myskype.info/andrey_janzen" class="skype" title="Skype"></a>
+  </li>
+  
+  
+  
+  <!-- LastFM -->
+  <li>
+  <a href="http://www.lastfm.com/user/virus126" class="lastfm" title="LastFM"></a>
+  </li>
+  
+</ul>
+
+
+<!-- use full url including 'index.html' for navigation bar if you are using ajax -->
+<ul id="nav">
+	<li><a href="/index.html">Главная</a></li>
+	<li><a href="/blog/archives/index.html">Архив</a></li>
+    <li><a href="/atom.xml">RSS</a></li>
+    
+    <li>
+    <div id="dark">
+        <form method="get" action="/search.html" id="search">
+            <input name="query" type="text" placeholder="Поиск..." x-webkit-speech />
+        </form>
+    </div>
+    </li>
+    
+</ul>
+
+
+
+
+</header>
+
+<div id="toload">
+<!-- begin toload --> 
+    <div id="content" class="inner">
+        <article class="post">
+	<h2 class="title">Отправка уведомлений на почту при деплое проекта</h2>
+	<div class="entry-content"><p>В нашем проекте при каждом деплое разработчики, тестеры и ещё пара людей получают замечательные письма:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Subject: Наш проект версии v1.1.1 обновлён на сервере 'testing'
+</span><span class='line'>
+</span><span class='line'>user1 выложил следующие обновления на сервер 'testing':
+</span><span class='line'>
+</span><span class='line'>Коммиты по задачам:
+</span><span class='line'>http://jira.local/browse/PROJECT-1234
+</span><span class='line'>
+</span><span class='line'>Полный список коммитов с предыдущего обновления:
+</span><span class='line'>4392a53 Thu Aug 18 17:50:32 2011 +0700 user1 / [PROJECT-1234] сделал полезное
+</span><span class='line'>f2fcfe2 Thu Aug 18 17:37:53 2011 +0700 user1 / сделал страшное
+</span><span class='line'>cb1fcbe Wed Aug 17 15:18:10 2011 +0700 user2 / зарефакторил
+</span><span class='line'>
+</span><span class='line'>Изменения по файлам:
+</span><span class='line'> file1                 |    4 ++--
+</span><span class='line'> file2                 |    8 ++++----
+</span><span class='line'> file3                 |    8 ++++----
+</span><span class='line'> 3 files changed, 10 insertions(+), 10 deletions(-)</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Такое решение помогло нам избавиться от вопросов тестеров &#8220;Ну что, выложили уже исправление бага XXX?&#8221;, &#8220;Что нового на тестовом сервере?&#8221;. Так же - все члены команды, отдел внедрения и руководство в курсе, что происходит с кодом на серверах.
+Для работы используется git, capistrano (+ multistage), php, bash (+ некоторые консольные утилитки). Если интересно - заходим под кат.</p>
+
+<!-- more -->
+
+
+
+
+<h1>Алгоритм работы</h1>
+
+
+<ul><li>Обновляем код на сервере testing (cap testing deploy)</li><li>После deploy:restart срабатывает хук, создающий тег в репозитории. Тег формируется на основе версии проекта (хранится в конфиге, в репозитории), названии staging-сервера и названии релиза</li><li>В репозитории срабатывает хук. Если пришёл не тег - игнорируем, если же тег:<ul><li>Распиливаем его на компоненты: версия, сервер</li><li>Определяем предыдущий тег на этом же сервере</li><li>Если тега нет - значит эта первая установка и генерировать различия не стоит, там может быть несколько тысяч коммитов</li><li>Если же есть тег - генерируем список различий, выдёргиваем из них список задач; составляем список изменённых файлов</li><li>Отправка сгенерированного письма</li></ul></li></ul>
+
+
+<h1>Создание тега</h1>
+
+
+<p>Про настройку capistrano и capistrano-multistage уже где только не написано, поэтому я только расскажу, как у нас добавляется тег.</p>
+
+<p>Будем считать, что у нас в корне репозитория есть файл <i>configs.ini</i>, который содержит ключ <i>runtime.version</i>. За основу был взят <a href='https://gist.github.com/381852'>gist#381852</a>.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">namespace</span> <span class="ss">:deploy</span> <span class="k">do</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">after</span> <span class="s2">&quot;deploy:restart&quot;</span><span class="p">,</span> <span class="s2">&quot;deploy:git:push_deploy_tag&quot;</span>
+</span><span class='line'>  <span class="n">namespace</span> <span class="ss">:git</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">desc</span> <span class="s2">&quot;Place release tag into Git and push it to server.&quot;</span>
+</span><span class='line'>    <span class="n">task</span> <span class="ss">:push_deploy_tag</span> <span class="k">do</span>
+</span><span class='line'>      <span class="n">user</span> <span class="o">=</span> <span class="sb">`git config --get user.name`</span><span class="o">.</span><span class="n">strip</span>
+</span><span class='line'>      <span class="n">email</span> <span class="o">=</span> <span class="sb">`git config --get user.email`</span><span class="o">.</span><span class="n">strip</span>
+</span><span class='line'>      <span class="n">version</span> <span class="o">=</span> <span class="sb">`git cat-file -p </span><span class="si">#{</span><span class="n">real_revision</span><span class="si">}</span><span class="sb">:configs.ini | fgrep runtime.version | awk -F &#39;[ =]+&#39; &#39;{print $2}&#39;`</span><span class="o">.</span><span class="n">strip</span>
+</span><span class='line'>      <span class="nb">puts</span> <span class="sb">`git tag v</span><span class="si">#{</span><span class="n">version</span><span class="si">}</span><span class="sb">-</span><span class="si">#{</span><span class="n">stage</span><span class="si">}</span><span class="sb">-</span><span class="si">#{</span><span class="n">release_name</span><span class="si">}</span><span class="sb"> </span><span class="si">#{</span><span class="n">real_revision</span><span class="si">}</span><span class="sb"> -m &quot;Deployed by </span><span class="si">#{</span><span class="n">user</span><span class="si">}</span><span class="sb"> &lt;</span><span class="si">#{</span><span class="n">email</span><span class="si">}</span><span class="sb">&gt;&quot;`</span>
+</span><span class='line'>      <span class="nb">puts</span> <span class="sb">`git push --tags`</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Что здесь происходит:<ul><li>Извлекаем данные текущего пользователя (имя и почту) из конфига гита</li><li>Берём файл configs.ini из устанавливаемой ревизии и выдёргиваем версию</li><li>Создаём аннотированный тэг. В аннотации указываем, кто и когда задеплоил</li><li>Публикуем теги</li></ul></p>
+
+<h1>Обрабатываем обновление репозитория</h1>
+
+
+<p>Хуку <i>pre-receive</i> на вход (stdin) подётся 3 значения: предыдущая и текущая ревизии, refname.
+Читаем входящие параметры и убеждаемся, что пришёл тег:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="k">while </span><span class="nb">read </span>oldrev newrev refname
+</span><span class='line'><span class="k">do</span>
+</span><span class='line'><span class="k">    </span><span class="nv">rev_type</span><span class="o">=</span><span class="k">$(</span>git cat-file -t <span class="nv">$newrev</span> 2&gt;/dev/null<span class="k">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">case</span> <span class="s2">&quot;$refname&quot;</span>,<span class="s2">&quot;$rev_type&quot;</span> in
+</span><span class='line'>        refs/tags/*,tag<span class="o">)</span>
+</span><span class='line'>        ;;
+</span><span class='line'>    <span class="k">esac</span>
+</span><span class='line'><span class="k">done</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Выделяем название тега, разбиваем его на части, ищем предыдущий тег для этого сервера:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">tag</span><span class="o">=</span><span class="k">${</span><span class="nv">refname</span><span class="p">##refs/tags/</span><span class="k">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nv">version</span><span class="o">=</span><span class="sb">`</span><span class="nb">echo</span> <span class="nv">$tag</span> | cut -d- -f1<span class="sb">`</span>
+</span><span class='line'><span class="nv">server</span><span class="o">=</span><span class="sb">`</span><span class="nb">echo</span> <span class="nv">$tag</span> | cut -d- -f2<span class="sb">`</span>
+</span><span class='line'><span class="nv">prevtag</span><span class="o">=</span><span class="k">$(</span>git describe --tags --abbrev<span class="o">=</span>0 --match<span class="o">=</span><span class="s2">&quot;*-$server-*&quot;</span> <span class="nv">$newrev</span>^ 2&gt;/dev/null<span class="k">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Если в $prevtag пусто - значит это первая установка на сервер. Если версия у нового и старого тега совпадает - это обновление, если же нет - установка новой версии. Таким образом мы генерируем корректный заголовок письма.</p>
+
+<p>Начнём формировать тело письма. Сперва - определим кто осмелился задеплоить:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">eval</span> <span class="k">$(</span>git <span class="k">for</span>-each-ref --shell --format<span class="o">=</span><span class="s1">&#39;</span>
+</span><span class='line'><span class="s1">          tagger=%(taggername)</span>
+</span><span class='line'><span class="s1">          tagged=%(taggerdate)&#39;</span> <span class="nv">$refname</span>
+</span><span class='line'>        <span class="k">)</span>
+</span><span class='line'><span class="nb">echo</span> <span class="s2">&quot;$tagger выложил следующие обновления на сервер &#39;$server&#39;:&quot;</span> &gt; msg
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Теперь разберём коммиты по задачам. Последние в Jira именуются по маске &lt;алиас проекта&gt;-&lt;id задачи&gt;, все разработчики в обязательном порядке указывают алиас задачи (uppercase) в коммите. Если задача крупнее чем на 30 минут и требует более 1 коммита - создаётся ветка, по алиасу задачи, и тогда в коммитах эту самую задачу мы уже не упоминаем. Итого, чтобы достать список задач нам нужно выполнить не сложную обработку регуляркой:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>git log <span class="nv">$rev_range</span> --abbrev-commit --pretty<span class="o">=</span><span class="s2">&quot;format:%s&quot;</span> &gt; tmpfile
+</span><span class='line'>php &gt;tickets <span class="s">&lt;&lt;END</span>
+</span><span class='line'><span class="s">&lt;?php</span>
+</span><span class='line'><span class="s">\$f = file_get_contents(&quot;$tmp&quot;);</span>
+</span><span class='line'><span class="s">if (preg_match_all(&quot;#([A-Z.]+-\d+)#&quot;, \$f, \$matches)) {</span>
+</span><span class='line'><span class="s">    \$matches[1] = array_unique(\$matches[1]);</span>
+</span><span class='line'><span class="s">    foreach (\$matches[1] as \$match) {</span>
+</span><span class='line'><span class="s">        echo &#39;$JIRA_HOST/browse/&#39;, \$match, PHP_EOL;</span>
+</span><span class='line'><span class="s">    }</span>
+</span><span class='line'><span class="s">}</span>
+</span><span class='line'><span class="s">END</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Если в итоге файл <i>tmpfile</i> не пуст - добавляем его к телу письма.
+Дальше идёт информация, которая интересует только разработчиков проекта: списки коммитов и изменённых файлов:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> <span class="s2">&quot;Полный список коммитов с предыдущего обновления:&quot;</span> &gt;&gt; msg
+</span><span class='line'>git log <span class="nv">$rev_range</span> --no-merges --abbrev-commit --pretty<span class="o">=</span><span class="s2">&quot;format:%h %ad %an / %s&quot;</span> &gt;&gt; msg
+</span><span class='line'>
+</span><span class='line'><span class="nb">echo</span> -e <span class="s2">&quot;\n\nИзменения по файлам:&quot;</span> &gt;&gt;msg
+</span><span class='line'>git diff --stat<span class="o">=</span>140,110 <span class="nv">$rev_range</span> &gt;&gt;msg
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Ну и, наконец, тупая отправка письма:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>cat msg | mail -s <span class="s2">&quot;$subject&quot;</span> <span class="nv">$MAIL_TO</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Все файлы можно взять на гитхабе: <a href="https://github.com/zvirusz/git-deploy-notify">https://github.com/zvirusz/git-deploy-notify</a></p>
+
+<p>P.S. Если кто-нибудь поможет переписать кусок кода, выдёргивающий имена задач, на perl/bash - я буду очень рад.</p>
+</div>
+
+<div class="meta">
+	
+</div>
+</article>
+
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_counter addthis_pill_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+
+
+<section id="comment">
+    <h2 class="title">Comments</h2>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</section>
+
+    </div>
+    <footer id="footer">
+    <div style="display:inline">
+    Copyright &copy; 2013
+
+    Андрей Янцен
+. Powered by <a href="http://octopress.org">Octopress</a> | 
+    Theme <a href="http://github.com/panks/fabric">fabric</a> by <a href="http://panks.me">Pankaj Kumar</a>
+</div>
+
+
+    </footer>
+    <script src="/javascripts/fabric.js"></script>
+<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
+
+
+<script type="text/javascript">
+      var disqus_shortname = 'zvirusz';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://andrey.janzen.su//blog/2011/08/19/otpravka-uviedomlienii-na-pochtu-pri-dieploie-proiekta/';
+        var disqus_url = 'http://andrey.janzen.su//blog/2011/08/19/otpravka-uviedomlienii-na-pochtu-pri-dieploie-proiekta/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+<!-- end toload --> 
+</div>
+</div>
+<script src="/javascripts/jquery.ui.totop.js" type="text/javascript"></script>
+<script type="text/javascript">
+/*<![CDATA[*/
+;(function($){$().UItoTop({easingType:'easeOutCirc'});})(jQuery); 
+/*]]>*/
+</script><!-- remove it to remove the scroll to top button -->
+</body>
+</html>

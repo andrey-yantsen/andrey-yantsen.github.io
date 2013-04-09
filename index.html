@@ -6,7 +6,7 @@
 	<title>Бложек сурового пэхэпэшника</title>
     <meta name="author" content="Андрей Янцен">
     
-	<meta name="description" content="Опубликовано: Пятница, 23 Октября 2009 Метки: games, javascript, mcs Разработчиками в MCS, к сожалению, не предусмотрена возможность застройки улицы &hellip;">
+	<meta name="description" content="Опубликовано: Пятница, 19 Августа 2011 Метки: В нашем проекте при каждом деплое разработчики, тестеры и ещё пара людей получают замечательные письма &hellip;">
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -120,6 +120,171 @@
 <!-- begin toload --> 
     <div id="content" class="inner">
         
+
+
+    <article class="post">
+	<h2 class="title">
+		
+		<a href="/blog/2011/08/19/otpravka-uviedomlienii-na-pochtu-pri-dieploie-proiekta/">
+		
+			Отправка уведомлений на почту при деплое проекта</a>
+	</h2>
+    <div class="entry-content">
+    <div class="meta">
+      <div class="date">Опубликовано: 
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2011-08-19T12:02:00+07:00" pubdate data-updated="true">Пятница, 19 Августа 2011</time></div>
+      <div class="tags">Метки: 
+
+</div>
+    </div>
+		<p>В нашем проекте при каждом деплое разработчики, тестеры и ещё пара людей получают замечательные письма:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Subject: Наш проект версии v1.1.1 обновлён на сервере 'testing'
+</span><span class='line'>
+</span><span class='line'>user1 выложил следующие обновления на сервер 'testing':
+</span><span class='line'>
+</span><span class='line'>Коммиты по задачам:
+</span><span class='line'>http://jira.local/browse/PROJECT-1234
+</span><span class='line'>
+</span><span class='line'>Полный список коммитов с предыдущего обновления:
+</span><span class='line'>4392a53 Thu Aug 18 17:50:32 2011 +0700 user1 / [PROJECT-1234] сделал полезное
+</span><span class='line'>f2fcfe2 Thu Aug 18 17:37:53 2011 +0700 user1 / сделал страшное
+</span><span class='line'>cb1fcbe Wed Aug 17 15:18:10 2011 +0700 user2 / зарефакторил
+</span><span class='line'>
+</span><span class='line'>Изменения по файлам:
+</span><span class='line'> file1                 |    4 ++--
+</span><span class='line'> file2                 |    8 ++++----
+</span><span class='line'> file3                 |    8 ++++----
+</span><span class='line'> 3 files changed, 10 insertions(+), 10 deletions(-)</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Такое решение помогло нам избавиться от вопросов тестеров &#8220;Ну что, выложили уже исправление бага XXX?&#8221;, &#8220;Что нового на тестовом сервере?&#8221;. Так же - все члены команды, отдел внедрения и руководство в курсе, что происходит с кодом на серверах.
+Для работы используется git, capistrano (+ multistage), php, bash (+ некоторые консольные утилитки). Если интересно - заходим под кат.</p>
+
+
+		
+		<a href="/blog/2011/08/19/otpravka-uviedomlienii-na-pochtu-pri-dieploie-proiekta/" class="more-link">Читать дальше</a>
+	</div>
+
+<div class="meta">
+	
+</div>
+</article>
+
+
+    <article class="post">
+	<h2 class="title">
+		
+		<a href="/blog/2011/01/05/rieanimiruiem-dctc-dlia-borby-s-lozhnymi-failami/">
+		
+			Реанимируем Dctc для борьбы с ложными файлами</a>
+	</h2>
+    <div class="entry-content">
+    <div class="meta">
+      <div class="date">Опубликовано: 
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2011-01-05T14:39:00+07:00" pubdate data-updated="true">Среда,  5 Января 2011</time></div>
+      <div class="tags">Метки: 
+
+</div>
+    </div>
+		<p>Года 4 назад у меня родилась идея - написать бота, который бы отслеживал активность в нашем локальном DC-хабе - просто логировал чат и выполнял простые команды в приват. За пару вечеров был найден прекрасный консольный клиент - <a href='http://ac2i.homelinux.com/dctc/'>dctc</a>, с которым можно взаимодействовать через unix-socket; а ещё за пару вечеров - написан простенький бот на php. При создании бота были внесены первые поправки в код dctc, чтобы он не посылал странные команды на сервер. Через некоторое время меня сделали модератором на этом самом хабе и я начал безжалостно банить. Но удобной системы для отслеживания количества банов у конкретных людей не было, но администратор каждые 5 минут генерировал информацию по текущим банам - ещё несколько убитых вечеров - и вот администрация обрела лёгкую возможность отслеживать порядковый номер бана.</p>
+
+<p>Спустя ещё несколько месяцев в сети стали появляться фэйки - это когда, например, скачиваешь Шрэка, а там вовсе даже не Шрэк, а красная шапочка и трое непонятных мужиков&#8230; Некоторое время боролись своими силами, но душа поэта не выдержала - и я решил улучшить бота.</p>
+
+
+		
+		<a href="/blog/2011/01/05/rieanimiruiem-dctc-dlia-borby-s-lozhnymi-failami/" class="more-link">Читать дальше</a>
+	</div>
+
+<div class="meta">
+	
+</div>
+</article>
+
+
+    <article class="post">
+	<h2 class="title">
+		
+		<a href="/blog/2010/06/28/qr-dlia-oplaty-po-sms/">
+		
+			QR для оплаты по СМС</a>
+	</h2>
+    <div class="entry-content">
+    <div class="meta">
+      <div class="date">Опубликовано: 
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-06-28T17:32:00+07:00" pubdate data-updated="true">Понедельник, 28 Июня 2010</time></div>
+      <div class="tags">Метки: 
+
+
+	<a class='category' href='/blog/categories/idea/'>idea</a>, <a class='category' href='/blog/categories/qr/'>qr</a>, <a class='category' href='/blog/categories/sms-platiezhi/'>sms-платежи</a>
+
+
+</div>
+    </div>
+		<p>Сегодня первый раз в жизни производил оплату услуги через SMS, и чтобы не нажимать на неудобные, маленькие кнопочки смартфона я просто открыл <a href="http://qrcode.kaywa.com/">qrcode.kaywa.com</a> и заполнил необходимые поля на компьютере, затем скормил картинку сканеру штрих-кодов на телефоне — и получил готовую SMS (с заполненным номером и текстом) — оставалось только нажать «отправить».</p>
+
+<p>Так вот, почему бы вам, господам принимающим оплату через SMS не упростить жизнь пользователю и не добавить небольшую картинку рядом с информацией о платеже? Благо делается это предельно просто — например код по ссылке <a href="http://chart.apis.google.com/chart?cht=qr&amp;chs=135x135&amp;chl=SMSTO:01:abcdef123">chart.apis.google.com/&#8230;/</a> сгенерирует сообщение на номер 01 с текстом abcdef123. Да и существуют готовые решения для генерации QR-кодов для популярных языков программирования, если у вас нет желания зависеть от гугла.</p>
+
+<p>Реализовать не сложно (разве что в дизайн вписать), а пользователю — приятно.</p>
+
+		
+		
+	</div>
+
+<div class="meta">
+	
+</div>
+</article>
 
 
     <article class="post">

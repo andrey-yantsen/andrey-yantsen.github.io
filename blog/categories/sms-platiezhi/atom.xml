@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: sms-платежи | Бложек сурового пэхэпэшника]]></title>
+  <link href="http://andrey.janzen.su//blog/categories/sms-platiezhi/atom.xml" rel="self"/>
+  <link href="http://andrey.janzen.su//"/>
+  <updated>2013-04-09T23:31:35+07:00</updated>
+  <id>http://andrey.janzen.su//</id>
+  <author>
+    <name><![CDATA[Андрей Янцен]]></name>
+    <email><![CDATA[andrey@janzen.su]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[QR для оплаты по СМС]]></title>
+    <link href="http://andrey.janzen.su//blog/2010/06/28/qr-dlia-oplaty-po-sms/"/>
+    <updated>2010-06-28T17:32:00+07:00</updated>
+    <id>http://andrey.janzen.su//blog/2010/06/28/qr-dlia-oplaty-po-sms</id>
+    <content type="html"><![CDATA[<p>Сегодня первый раз в жизни производил оплату услуги через SMS, и чтобы не нажимать на неудобные, маленькие кнопочки смартфона я просто открыл <a href="http://qrcode.kaywa.com/">qrcode.kaywa.com</a> и заполнил необходимые поля на компьютере, затем скормил картинку сканеру штрих-кодов на телефоне — и получил готовую SMS (с заполненным номером и текстом) — оставалось только нажать «отправить».</p>
+
+<p>Так вот, почему бы вам, господам принимающим оплату через SMS не упростить жизнь пользователю и не добавить небольшую картинку рядом с информацией о платеже? Благо делается это предельно просто — например код по ссылке <a href="http://chart.apis.google.com/chart?cht=qr&amp;chs=135x135&amp;chl=SMSTO:01:abcdef123">chart.apis.google.com/.../</a> сгенерирует сообщение на номер 01 с текстом abcdef123. Да и существуют готовые решения для генерации QR-кодов для популярных языков программирования, если у вас нет желания зависеть от гугла.</p>
+
+<p>Реализовать не сложно (разве что в дизайн вписать), а пользователю — приятно.</p>
+]]></content>
+  </entry>
+  
+</feed>
