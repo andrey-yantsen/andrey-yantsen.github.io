@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: pxe | Бложек сурового пэхэпэшника]]></title>
+  <link href="http://andrey.janzen.su//blog/categories/pxe/atom.xml" rel="self"/>
+  <link href="http://andrey.janzen.su//"/>
+  <updated>2013-04-09T11:40:07+07:00</updated>
+  <id>http://andrey.janzen.su//</id>
+  <author>
+    <name><![CDATA[Андрей Янцен]]></name>
+    <email><![CDATA[andrey@janzen.su]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Как установить Linux из сети]]></title>
+    <link href="http://andrey.janzen.su//blog/2009/03/02/kak-ustanovit-linux-iz-seti/"/>
+    <updated>2009-03-02T12:07:00+07:00</updated>
+    <id>http://andrey.janzen.su//blog/2009/03/02/kak-ustanovit-linux-iz-seti</id>
+    <content type="html"><![CDATA[<p>Буквально вчера хабраюзер <a href="http://habrahabr.ru/users/arceny/">Arceny</a> поведал нам об <a href="http://habrahabr.ru/blogs/linux/53219/">установке дебиана с USB-flash</a>. В статье он упомянул о возможности установки <q>С помощью загрузки по сети (<abbr title='Preboot Execution Environment'>PXE</abbr> boot)</q>, благодаря чему я решил наконец написать материал по созданию сервера pxe boot.</p>
+
+<!-- more -->
+
+
+<p>Повествование будет вестись на примере всё той же ОС — Debian (так что пути и команды у вас могут отличаться).
+Для начала — поставим <abbr title='Trivial File Transfer Protocol'>tftp</abbr>-сервер. Смотрим доступные варианты (<code>apt-cache search tftp | fgrep server</code>):</p>
+
+<ul>
+<li>atftpd</li>
+<li>dnsmasq</li>
+<li>tftpd</li>
+<li>tftpd-hpa</li>
+</ul>
+
+
+<p>Сначала я поставил tftpd-hpa, т.к. о нём рассказывалось в <a href="http://www.debian-administration.org/articles/478">мануале</a>, с которого я начинал создание сервера. Затем я перешёл на atftpd, т.к. мне потребовалось логирование. Рассмотрим оба варианта:</p>
+
+<ul>
+<li><p>tftpd-hpa:<br />
+Устанавливаем пакет, редактируем файл <code>/etc/default/tftpd-hpa</code>, дабы демон знал, что ему стоит жить:<pre><code>#Defaults for tftpd-hpa
+RUN_DAEMON="yes"
+OPTIONS="-l -s /var/lib/tftpboot"</code></pre>
+Создаём нужный каталог: <code>mkdir /var/lib/tftpboot</code>, и стартуем сервис <code>invoke-rc.d tftpd-hpa start</code></p></li>
+<li><p>atftpd:<br />
+После установки обнаруживаем, что по-умолчанию этот сервис работает через inetd. Я, почему-то, не фанат этого метода, поэтому первым делом закомментировал соответствующую строку в <code>/etc/inetd.conf</code>. Затем редактируем <code>/etc/default/atftpd</code>:<pre><code>USE_INETD=false
+OPTIONS="--daemon --tftpd-timeout 1500 --no-multicast --retry-timeout 20 --logfile /var/log/atftpd.log --maxthread 100 --verbose=5 /var/lib/tftpboot"</code></pre>
+<code>--tftpd-timeout</code> — время жизни потока, при отсутствии запросов<br />
+<code>--retry-timeout</code> — таймаут отдачи файла<br />
+у меня установлены большие таймауты, т.к. сервис транслируется в городскую локальную сеть, которая периодически прогибается от обилия абонентов, и не справляется с потоком запросов.<br />
+Ну и, как и в предыдущем пункте, — создаём нужный каталог: <code>mkdir /var/lib/tftpboot</code>, и стартуем сервис <code>invoke-rc.d atftpd start</code></p></li>
+</ul>
+
+
+<p>Теперь у нас есть tftp-сервер. Один шаг мы сделали :)
+Далее — настройка dhcp:</p>
+
+<ul>
+<li><p>dhcp3:<br />
+В конфигурационный файл <code>/etc/dhcp3/dhcpd.conf</code> добавляем информацию о загрузке:<pre><code>filename "pxelinux.0";
+next-server <tftp-server-ip>;</code></pre>
+Если tftpd установлен на том же сервере, что и dhcpd — директиву next-server можно опустить. И перезапускаем dhcp3-server: <code>invoke-rc.d dhcp3-server restart</code></p></li>
+<li><p>dnsmasq:<br />
+В конфиг <code>/etc/dnsmasq.conf</code> дописываем:<pre><code>dhcp-boot=pxelinux.0,&lt;tftp-server-hostname&gt;,&lt;tftp-server-ip&gt;</pre></code>
+Опять же, если сервера tftp и dhcp совпадают — последние 2 атрибута можно не заполнять. Перезапускаем: <code>invoke-rc.d dnsmasq restart</code></p></li>
+</ul>
+
+
+<p>Шаг второй пройден. Дальше — непосредственно настройка pxe-boot.
+Идём на <a href="ftp://ftp.debian.org/debian/dists/lenny/main/">ftp.debian.org</a>, выбираем каталог <code>installer-*</code>, соответствующий необходимой архитектуре. Затем переходим в директорию <code>current/images/netboot</code> внутри мы найдём файлы <code>netboot.tar.gz</code> и <code>gtk/netboot.tar.gz</code> — это файлы текстовой и графической установки соответственно. Выбираем понравившийся, качаем и распаковываем в <code>/var/lib/tftpboot</code>.
+Осталось убедиться, что зазрешён доступ на 69 UDP порт, и можно пользоваться прелестями сетевой установки.</p>
+
+<p>В качестве бонуса прилагаю меню, которое получилось у меня в результате нескольких дней издевательств. В текущей конфигурации возможна установка нескольких ОС (установка Debian возможна как в текстовом, так и в графическом режиме), загрузка xUbuntu (через nfs), SystemRescueCD (через http-boot), memtest86 (через tftp). Установка всех ОС возможна для 2 архитектур — x86 и x64. Т.к. у меня лежит внутрисетевое зеркало репозиториев Ubuntu 8.10 и Debian 5.0, то установщики не предлают выбор репозитория, а автоматически сливают всё с него.</p>
+
+<p><a href="https://docs.google.com/file/d/0BxaH7RICY3lbbndQZDFSZkY4dFk/edit?usp=sharing">Архив</a> <code>/var/lib/tftpboot</code> (без малого 200мб), а так же — <a href="https://docs.google.com/file/d/0BxaH7RICY3lbcmppYjhld3d6QXc/edit?usp=sharing">файлы конфигурации</a> для установщиков Ubuntu и Debian: в них указаны репозитории + Ubuntu разбивается на Ubuntu, kUbuntu, xUbuntu, edUbuntu.</p>
+
+<p>В этой конфигурации есть один большой минус, который мне лень исправить: при открытии меню подгружается порядка 70 файлов, бОльшая часть из которых не нужна пользователю. Что бы избавиться от этого — отображение подменю нужно перевести из подключения меню инклудами в их вызов через ядро <code>vesamenu.c32</code>, которое идёт с pxeboot. Так же — не помешает очистить каталоги меню от дубликатов — большая часть конфигов для меню x64 и x86 совпадает.</p>
+]]></content>
+  </entry>
+  
+</feed>
