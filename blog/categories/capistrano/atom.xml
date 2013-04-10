@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: capistrano | Бложек сурового пэхэпэшника]]></title>
+  <link href="http://andrey.janzen.su//blog/categories/capistrano/atom.xml" rel="self"/>
+  <link href="http://andrey.janzen.su//"/>
+  <updated>2013-04-10T13:08:43+07:00</updated>
+  <id>http://andrey.janzen.su//</id>
+  <author>
+    <name><![CDATA[Андрей Янцен]]></name>
+    <email><![CDATA[andrey@janzen.su]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Отправка уведомлений на почту при деплое проекта]]></title>
+    <link href="http://andrey.janzen.su//blog/2011/08/19/otpravka-uviedomlienii-na-pochtu-pri-dieploie-proiekta/"/>
+    <updated>2011-08-19T12:02:00+07:00</updated>
+    <id>http://andrey.janzen.su//blog/2011/08/19/otpravka-uviedomlienii-na-pochtu-pri-dieploie-proiekta</id>
+    <content type="html"><![CDATA[<p>В нашем проекте при каждом деплое разработчики, тестеры и ещё пара людей получают замечательные письма:</p>
+
+<p>```
+Subject: Наш проект версии v1.1.1 обновлён на сервере 'testing'</p>
+
+<p>user1 выложил следующие обновления на сервер 'testing':</p>
+
+<p>Коммиты по задачам:
+http://jira.local/browse/PROJECT-1234</p>
+
+<p>Полный список коммитов с предыдущего обновления:
+4392a53 Thu Aug 18 17:50:32 2011 +0700 user1 / [PROJECT-1234] сделал полезное
+f2fcfe2 Thu Aug 18 17:37:53 2011 +0700 user1 / сделал страшное
+cb1fcbe Wed Aug 17 15:18:10 2011 +0700 user2 / зарефакторил</p>
+
+<p>Изменения по файлам:
+ file1                 |    4 ++--
+ file2                 |    8 ++++----
+ file3                 |    8 ++++----
+ 3 files changed, 10 insertions(+), 10 deletions(-)
+```</p>
+
+<p>Такое решение помогло нам избавиться от вопросов тестеров "Ну что, выложили уже исправление бага XXX?", "Что нового на тестовом сервере?". Так же - все члены команды, отдел внедрения и руководство в курсе, что происходит с кодом на серверах.
+Для работы используется git, capistrano (+ multistage), php, bash (+ некоторые консольные утилитки). Если интересно - заходим под кат.</p>
+
+<!-- more -->
+
+
+
+
+<h1>Алгоритм работы</h1>
+
+
+<ul><li>Обновляем код на сервере testing (cap testing deploy)</li><li>После deploy:restart срабатывает хук, создающий тег в репозитории. Тег формируется на основе версии проекта (хранится в конфиге, в репозитории), названии staging-сервера и названии релиза</li><li>В репозитории срабатывает хук. Если пришёл не тег - игнорируем, если же тег:<ul><li>Распиливаем его на компоненты: версия, сервер</li><li>Определяем предыдущий тег на этом же сервере</li><li>Если тега нет - значит эта первая установка и генерировать различия не стоит, там может быть несколько тысяч коммитов</li><li>Если же есть тег - генерируем список различий, выдёргиваем из них список задач; составляем список изменённых файлов</li><li>Отправка сгенерированного письма</li></ul></li></ul>
+
+
+<h1>Создание тега</h1>
+
+
+<p>Про настройку capistrano и capistrano-multistage уже где только не написано, поэтому я только расскажу, как у нас добавляется тег.</p>
+
+<p>Будем считать, что у нас в корне репозитория есть файл <i>configs.ini</i>, который содержит ключ <i>runtime.version</i>. За основу был взят <a href='https://gist.github.com/381852'>gist#381852</a>.</p>
+
+<p>``` ruby
+namespace :deploy do</p>
+
+<p>  after "deploy:restart", "deploy:git:push_deploy_tag"
+  namespace :git do</p>
+
+<pre><code>desc "Place release tag into Git and push it to server."
+task :push_deploy_tag do
+  user = `git config --get user.name`.strip
+  email = `git config --get user.email`.strip
+  version = `git cat-file -p #{real_revision}:configs.ini | fgrep runtime.version | awk -F '[ =]+' '{print $2}'`.strip
+  puts `git tag v#{version}-#{stage}-#{release_name} #{real_revision} -m "Deployed by #{user} &lt;#{email}&gt;"`
+  puts `git push --tags`
+end
+</code></pre>
+
+<p>  end
+end
+```</p>
+
+<p>Что здесь происходит:<ul><li>Извлекаем данные текущего пользователя (имя и почту) из конфига гита</li><li>Берём файл configs.ini из устанавливаемой ревизии и выдёргиваем версию</li><li>Создаём аннотированный тэг. В аннотации указываем, кто и когда задеплоил</li><li>Публикуем теги</li></ul></p>
+
+<h1>Обрабатываем обновление репозитория</h1>
+
+
+<p>Хуку <i>pre-receive</i> на вход (stdin) подётся 3 значения: предыдущая и текущая ревизии, refname.
+Читаем входящие параметры и убеждаемся, что пришёл тег:</p>
+
+<p>``` bash
+while read oldrev newrev refname
+do</p>
+
+<pre><code>rev_type=$(git cat-file -t $newrev 2&gt;/dev/null)
+
+case "$refname","$rev_type" in
+    refs/tags/*,tag)
+    ;;
+esac
+</code></pre>
+
+<p>done
+```</p>
+
+<p>Выделяем название тега, разбиваем его на части, ищем предыдущий тег для этого сервера:</p>
+
+<p>``` bash
+tag=${refname##refs/tags/}</p>
+
+<p>version=<code>echo $tag | cut -d- -f1</code>
+server=<code>echo $tag | cut -d- -f2</code>
+prevtag=$(git describe --tags --abbrev=0 --match="<em>-$server-</em>" $newrev^ 2>/dev/null)
+```</p>
+
+<p>Если в $prevtag пусто - значит это первая установка на сервер. Если версия у нового и старого тега совпадает - это обновление, если же нет - установка новой версии. Таким образом мы генерируем корректный заголовок письма.</p>
+
+<p>Начнём формировать тело письма. Сперва - определим кто осмелился задеплоить:</p>
+
+<p>``` bash
+eval $(git for-each-ref --shell --format='</p>
+
+<pre><code>      tagger=%(taggername)
+      tagged=%(taggerdate)' $refname
+    )
+</code></pre>
+
+<p>echo "$tagger выложил следующие обновления на сервер '$server':" > msg
+```</p>
+
+<p>Теперь разберём коммиты по задачам. Последние в Jira именуются по маске &lt;алиас проекта&gt;-&lt;id задачи&gt;, все разработчики в обязательном порядке указывают алиас задачи (uppercase) в коммите. Если задача крупнее чем на 30 минут и требует более 1 коммита - создаётся ветка, по алиасу задачи, и тогда в коммитах эту самую задачу мы уже не упоминаем. Итого, чтобы достать список задач нам нужно выполнить не сложную обработку регуляркой:</p>
+
+<p>``` bash
+git log $rev_range --abbrev-commit --pretty="format:%s" > tmpfile
+php >tickets &lt;&lt;END
+&lt;?php
+\$f = file_get_contents("$tmp");
+if (preg_match_all("#([A-Z.]+-\d+)#", \$f, \$matches)) {</p>
+
+<pre><code>\$matches[1] = array_unique(\$matches[1]);
+foreach (\$matches[1] as \$match) {
+    echo '$JIRA_HOST/browse/', \$match, PHP_EOL;
+}
+</code></pre>
+
+<p>}
+END
+```</p>
+
+<p>Если в итоге файл <i>tmpfile</i> не пуст - добавляем его к телу письма.
+Дальше идёт информация, которая интересует только разработчиков проекта: списки коммитов и изменённых файлов:</p>
+
+<p>``` bash
+echo "Полный список коммитов с предыдущего обновления:" >> msg
+git log $rev_range --no-merges --abbrev-commit --pretty="format:%h %ad %an / %s" >> msg</p>
+
+<p>echo -e "\n\nИзменения по файлам:" >>msg
+git diff --stat=140,110 $rev_range >>msg
+```</p>
+
+<p>Ну и, наконец, тупая отправка письма:
+<code>bash
+cat msg | mail -s "$subject" $MAIL_TO
+</code></p>
+
+<p>Все файлы можно взять на гитхабе: <a href="https://github.com/zvirusz/git-deploy-notify">https://github.com/zvirusz/git-deploy-notify</a></p>
+
+<p>P.S. Если кто-нибудь поможет переписать кусок кода, выдёргивающий имена задач, на perl/bash - я буду очень рад.</p>
+]]></content>
+  </entry>
+  
+</feed>
